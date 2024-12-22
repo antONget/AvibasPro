@@ -1,46 +1,40 @@
 from aiogram import Router, F, Bot
-from aiogram.types import CallbackQuery, Message
-from aiogram.filters.callback_data import CallbackData
+from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.filters import StateFilter
 
 from keyboards.user_keyboard_select_seat import keyboards_seat, keyboard_confirm
-import aiogram_calendar
-from datetime import datetime
-from services.zeep_soap import get_trips, get_trips_segment, get_occupied_seats, start_sale_session
+from services.zeep_soap import get_trips_segment, get_occupied_seats, start_sale_session
 from config_data.config import Config, load_config
+from utils.error_handling import error_handler
 import logging
 
 router = Router()
 config: Config = load_config()
 
 
-class Calendar(StatesGroup):
-    start = State()
-    feedbak = State()
-
-
 @router.callback_query(F.data.startswith('router_'))
-async def set_calendar(callback: CallbackQuery, state: FSMContext) -> None:
+@error_handler
+async def set_calendar(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     """
-    Подключаем календарь
-    :param callback:
+    Выбор свободного места на выбранный рейс
+    :param callback: router_{rout[0]}
+    rout[0] - id рейса
     :param state:
+    :param bot:
     :return:
     """
     logging.info(f'set_calendar')
-    Id = callback.data.split('_')[-1]
+    trip_id = callback.data.split('_')[-1]
     data = await state.get_data()
-    occupied_seats = await get_occupied_seats(trip_id=Id,
+    occupied_seats = await get_occupied_seats(trip_id=trip_id,
                                               departure=data['departure'],
                                               destination=data['destination'],
-                                              order_id=Id)
-    trips_segment = await get_trips_segment(trip_id=Id,
+                                              order_id=trip_id)
+    trips_segment = await get_trips_segment(trip_id=trip_id,
                                             departure=data['departure'],
                                             destination=data['destination'])
     await state.update_data(departure_time=trips_segment['DepartureTime'])
-    await state.update_data(trip_id=Id)
+    await state.update_data(trip_id=trip_id)
     dict_bus = occupied_seats['Bus']
     dict_seats_scheme = dict_bus['SeatsScheme']
     if occupied_seats['return']:
@@ -54,7 +48,16 @@ async def set_calendar(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data.startswith('select_count_block_'))
+@error_handler
 async def select_count_block(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Выбор свободного места на выбранный рейс - переключение по блокам рядов в автобусе
+    :param callback: select_count_block_{i+1}
+    {i+1} - номер блока для выбора мест в автобусе
+    :param state:
+    :param bot:
+    :return:
+    """
     logging.info('select_count_block')
     block = int(callback.data.split('_')[-1])
     data = await state.get_data()
@@ -82,7 +85,15 @@ async def select_count_block(callback: CallbackQuery, state: FSMContext, bot: Bo
 
 
 @router.callback_query(F.data.startswith('select_seat_'))
+@error_handler
 async def select_seat_(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Обработка выбранного места
+    :param callback:
+    :param state:
+    :param bot:
+    :return:
+    """
     logging.info('select_seat_')
     seat: str = callback.data.split('_')[-1]
     if seat == 'default':

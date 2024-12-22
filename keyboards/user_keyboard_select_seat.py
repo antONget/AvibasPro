@@ -99,14 +99,13 @@ def keyboards_seat(seats_scheme: list[dict] = None, seats_reserved: list[dict] =
             seats_scheme_.append(row)
         # формируем массив резерва
         list_reserved = []
-        print("SEAT_RESERVED", seats_reserved, sep='\n')
+        # print("SEAT_RESERVED", seats_reserved, sep='\n')
         for reserved_item in seats_reserved:
             list_reserved.append(reserved_item['Number'])
     kb_builder = InlineKeyboardBuilder()
     buttons = []
-    num_seat = 0
     row = 0
-    print("LIST_RESERVED", list_reserved, sep='\n')
+    # print("LIST_RESERVED", list_reserved, sep='\n')
     # формирование клавиатуры выбора мест
     for seats in seats_scheme_[show_row*block:show_row*(block+1)]:
         # формируем по рядам

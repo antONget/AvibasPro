@@ -29,6 +29,13 @@ class User(StatesGroup):
 @router.message(CommandStart())
 @error_handler
 async def process_press_start(message: Message, state: FSMContext, bot: Bot) -> None:
+    """
+    Обработка команды /start
+    :param message:
+    :param state:
+    :param bot:
+    :return:
+    """
     logging.info('process_press_start')
     await state.set_state(state=None)
     if message.from_user.username:
@@ -46,6 +53,13 @@ async def process_press_start(message: Message, state: FSMContext, bot: Bot) -> 
 @router.message(F.text == 'Купить билет')
 @error_handler
 async def press_button_pay_ticket(message: Message, bot: Bot, state: FSMContext):
+    """
+    Запуск процедуры покупки билета
+    :param message:
+    :param bot:
+    :param state:
+    :return:
+    """
     logging.info('press_button_pay_ticket')
     await message.answer(text='Выберите пункт отправления',
                          reply_markup=kb.keyboards_select_start_station())
@@ -54,6 +68,13 @@ async def press_button_pay_ticket(message: Message, bot: Bot, state: FSMContext)
 @router.callback_query(F.data == 'select_start_station_other')
 @error_handler
 async def select_start_station_other(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Выбор станции отправления (стартовое меню)
+    :param callback:
+    :param state:
+    :param bot:
+    :return:
+    """
     logging.info('select_start_station_other')
     dict_get_bus_stops: list[dict] = await get_bus_stops()
     await callback.message.edit_text(text='Выберите с какой буквы(букв) начинается название <b>ПУНКТА ОТПРАВЛЕНИЯ</b>',
@@ -66,6 +87,15 @@ async def select_start_station_other(callback: CallbackQuery, state: FSMContext,
 @router.callback_query(F.data.startswith('select_start_station_letter_'))
 @error_handler
 async def select_start_station_first_letter(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Выбор станции отправления по буквам
+    :param callback: select_start_station_letter_{count_letter}_{first_letter[:count_letter]}
+    count_letter - количество первых букв для вывода на клавиатуру
+    first_letter[:count_letter] - набор букв с которого начинается стация отправления
+    :param state:
+    :param bot:
+    :return:
+    """
     logging.info('select_start_station_first_letter')
     dict_get_bus_stops: list[dict] = await get_bus_stops()
     count_letter = int(callback.data.split('_')[-2]) + 1
@@ -81,6 +111,14 @@ async def select_start_station_first_letter(callback: CallbackQuery, state: FSMC
 @router.callback_query(F.data.startswith('select_start_station_'))
 @error_handler
 async def select_finish_station(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Выбор станции отправления по названию.
+    :param callback: select_start_station_{station[-1]}
+    {station[-1]} - Id автобусной остановки
+    :param state:
+    :param bot:
+    :return:
+    """
     logging.info('select_finish_station')
     departure: str = callback.data.split('_')[-1]
     await state.update_data(departure=departure)
@@ -95,6 +133,15 @@ async def select_finish_station(callback: CallbackQuery, state: FSMContext, bot:
 @router.callback_query(F.data.startswith('select_finish_station_letter_'))
 @error_handler
 async def select_finish_station_letter(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Выбор станции назначения по буквам
+    :param callback: select_finish_station_letter_{count_letter}_{first_letter[:count_letter]}
+    count_letter - количество первых букв для вывода на клавиатуру
+    first_letter[:count_letter] - набор букв с которого начинается стация назначения
+    :param state:
+    :param bot:
+    :return:
+    """
     logging.info('select_finish_station_letter')
     data: dict = await state.get_data()
     dict_get_bus_stops: list[dict] = await get_destinations(departure=data['departure'])
