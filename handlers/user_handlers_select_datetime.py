@@ -25,7 +25,7 @@ class Calendar(StatesGroup):
 async def set_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     """
     Подключаем календарь
-    :param message:
+    :param callback:
     :param state:
     :return:
     """
@@ -39,11 +39,12 @@ async def set_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     date1 = current_date.strftime('%d/%m/%Y')
     # преобразуем дату в список
     list_date1 = date1.split('/')
-    await callback.message.answer(
-        "Выберите дату отправления",
+    await callback.message.edit_text(
+        "Выберите <b>ДАТУ ОТПРАВЛЕНИЯ</b>",
         reply_markup=await calendar.start_calendar(year=int(list_date1[2]), month=int(list_date1[1]))
     )
     await state.set_state(Calendar.start)
+    await callback.answer()
 
 
 @router.callback_query(aiogram_calendar.SimpleCalendarCallback.filter(), StateFilter(Calendar.start))
@@ -60,8 +61,8 @@ async def process_simple_calendar_start(callback: CallbackQuery, callback_data: 
         list_router = []
         for rout in trips['Elements']:
             list_router.append([rout['Id'], rout['RouteNum'], rout['DepartureTime']])
-        await callback.message.answer(text='Выберите рейс',
-                                      reply_markup=keyboards_trip(list_routers=list_router))
+        await callback.message.edit_text(text='Выберите <b>РЕЙС</b>',
+                                         reply_markup=keyboards_trip(list_routers=list_router))
     await callback.answer()
 
 

@@ -54,9 +54,11 @@ async def get_trips(departure: str, destination: str, trips_date: str):
 
 
 async def get_trips_segment(trip_id: str, departure: str, destination: str):
-    return client.service.GetTripSegment(TripId=trip_id,
-                                         Departure=departure,
-                                         Destination=destination)
+    trips_segment = client.service.GetTripSegment(TripId=trip_id,
+                                                  Departure=departure,
+                                                  Destination=destination)
+    print("TRIPS_SEGMENT", trips_segment, sep='\n')
+    return trips_segment
 
 
 async def get_occupied_seats(trip_id: str, departure: str, destination: str, order_id: str):

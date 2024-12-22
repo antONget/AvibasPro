@@ -37,7 +37,9 @@ async def process_press_start(message: Message, state: FSMContext, bot: Bot) -> 
         username = 'USER'
     data_user = {'tg_id': message.from_user.id, 'username': username}
     await rq.add_user(data=data_user)
-    await message.answer(text=f'Этот бот предназначен для выбора рейса и покупки на него билета',
+    await message.answer(text=f'Добро пожаловать в бота по продаже билетов на автобусы пригородного сообщения.'
+                              f' Здесь вы можете быстро и удобно приобрести билеты на любой маршрут,'
+                              f' выбрав удобное время и место отправления.',
                          reply_markup=kb.keyboard_main_button())
 
 
@@ -45,7 +47,7 @@ async def process_press_start(message: Message, state: FSMContext, bot: Bot) -> 
 @error_handler
 async def press_button_pay_ticket(message: Message, bot: Bot, state: FSMContext):
     logging.info('press_button_pay_ticket')
-    await message.answer(text='Выберите остановку отправления',
+    await message.answer(text='Выберите пункт отправления',
                          reply_markup=kb.keyboards_select_start_station())
 
 
@@ -54,10 +56,11 @@ async def press_button_pay_ticket(message: Message, bot: Bot, state: FSMContext)
 async def select_start_station_other(callback: CallbackQuery, state: FSMContext, bot: Bot):
     logging.info('select_start_station_other')
     dict_get_bus_stops: list[dict] = await get_bus_stops()
-    await callback.message.answer(text='Выберите первую букву остановочного пункта',
-                                  reply_markup=
-                                  kb.keyboards_select_first_word_station(dict_get_bus_stops=dict_get_bus_stops,
-                                                                         count_letter=1))
+    await callback.message.edit_text(text='Выберите с какой буквы(букв) начинается название <b>ПУНКТА ОТПРАВЛЕНИЯ</b>',
+                                     reply_markup=
+                                     kb.keyboards_select_first_word_station(dict_get_bus_stops=dict_get_bus_stops,
+                                                                            count_letter=1))
+    await callback.answer()
 
 
 @router.callback_query(F.data.startswith('select_start_station_letter_'))
@@ -67,11 +70,12 @@ async def select_start_station_first_letter(callback: CallbackQuery, state: FSMC
     dict_get_bus_stops: list[dict] = await get_bus_stops()
     count_letter = int(callback.data.split('_')[-2]) + 1
     first_letter = callback.data.split('_')[-1]
-    await callback.message.answer(text='Выберите остановочный пункт',
-                                  reply_markup=
-                                  kb.keyboards_select_first_word_station(dict_get_bus_stops=dict_get_bus_stops,
-                                                                         count_letter=count_letter,
-                                                                         letter=first_letter))
+    await callback.message.edit_text(text='Выберите с какой буквы(букв) начинается название <b>ПУНКТА ОТПРАВЛЕНИЯ</b>',
+                                     reply_markup=
+                                     kb.keyboards_select_first_word_station(dict_get_bus_stops=dict_get_bus_stops,
+                                                                            count_letter=count_letter,
+                                                                            letter=first_letter))
+    await callback.answer()
 
 
 @router.callback_query(F.data.startswith('select_start_station_'))
@@ -81,10 +85,11 @@ async def select_finish_station(callback: CallbackQuery, state: FSMContext, bot:
     departure: str = callback.data.split('_')[-1]
     await state.update_data(departure=departure)
     dict_get_bus_stops: list[dict] = await get_destinations(departure=departure)
-    await callback.message.answer(text='Выберите остановочный пункт назначения',
-                                  reply_markup=
-                                  kb.keyboards_select_first_word_station_finish(dict_get_bus_stops=dict_get_bus_stops,
-                                                                                count_letter=1))
+    await callback.message.edit_text(text='Выберите с какой буквы(букв) начинается название <b>ПУНКТА НАЗНАЧЕНИЯ</b>',
+                                     reply_markup=
+                                     kb.keyboards_select_first_word_station_finish(dict_get_bus_stops=dict_get_bus_stops,
+                                                                                   count_letter=1))
+    await callback.answer()
 
 
 @router.callback_query(F.data.startswith('select_finish_station_letter_'))
@@ -95,8 +100,9 @@ async def select_finish_station_letter(callback: CallbackQuery, state: FSMContex
     dict_get_bus_stops: list[dict] = await get_destinations(departure=data['departure'])
     count_letter: int = int(callback.data.split('_')[-2]) + 1
     first_letter: str = callback.data.split('_')[-1]
-    await callback.message.answer(text='Выберите остановочный пункт назначения',
-                                  reply_markup=
-                                  kb.keyboards_select_first_word_station_finish(dict_get_bus_stops=dict_get_bus_stops,
-                                                                                count_letter=count_letter,
-                                                                                letter=first_letter))
+    await callback.message.edit_text(text='Выберите с какой буквы(букв) начинается название <b>ПУНКТА НАЗНАЧЕНИЯ</b>',
+                                     reply_markup=
+                                     kb.keyboards_select_first_word_station_finish(dict_get_bus_stops=dict_get_bus_stops,
+                                                                                   count_letter=count_letter,
+                                                                                   letter=first_letter))
+    await callback.answer()

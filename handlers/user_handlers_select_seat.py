@@ -36,8 +36,6 @@ async def set_calendar(callback: CallbackQuery, state: FSMContext) -> None:
                                               departure=data['departure'],
                                               destination=data['destination'],
                                               order_id=Id)
-    # print('-1-', occupied_seats)
-    # print('-2-', sale_session)
     trips_segment = await get_trips_segment(trip_id=Id,
                                             departure=data['departure'],
                                             destination=data['destination'])
@@ -49,9 +47,10 @@ async def set_calendar(callback: CallbackQuery, state: FSMContext) -> None:
         dict_reserved = occupied_seats['return']['Elements']
     else:
         dict_reserved = {}
-    await callback.message.answer(text=f'Выберите свободное место {dict_bus["SeatCapacity"]}',
-                                  reply_markup=keyboards_seat(seats_scheme=dict_seats_scheme,
-                                                              seats_reserved=dict_reserved))
+    await callback.message.edit_text(text=f'Выберите свободное <b>МЕСТО</b>',
+                                     reply_markup=keyboards_seat(seats_scheme=dict_seats_scheme,
+                                                                 seats_reserved=dict_reserved))
+    await callback.answer()
 
 
 @router.callback_query(F.data.startswith('select_count_block_'))
@@ -72,10 +71,14 @@ async def select_count_block(callback: CallbackQuery, state: FSMContext, bot: Bo
         dict_reserved = occupied_seats['return']['Elements']
     else:
         dict_reserved = {}
-    await callback.message.answer(text=f'Выберите свободное место',
-                                  reply_markup=keyboards_seat(seats_scheme=dict_seats_scheme,
-                                                              block=block,
-                                                              seats_reserved=dict_reserved))
+    try:
+        await callback.message.edit_text(text=f'Выберите свободное <b>МЕСТО</b>',
+                                         reply_markup=keyboards_seat(seats_scheme=dict_seats_scheme,
+                                                                     block=block,
+                                                                     seats_reserved=dict_reserved))
+    except:
+        pass
+    await callback.answer()
 
 
 @router.callback_query(F.data.startswith('select_seat_'))
@@ -90,8 +93,6 @@ async def select_seat_(callback: CallbackQuery, state: FSMContext, bot: Bot):
         seat_num: int = int(seat)
         await state.update_data(seat_num=seat_num)
         data = await state.get_data()
-        id_departure = data['departure']
-        id_destination = data['destination']
         data_trip = data['data_trip']
         departure_time = data['departure_time']
         sale_session = await start_sale_session(trip_id=data['trip_id'],
@@ -99,11 +100,11 @@ async def select_seat_(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                                 destination=data['destination'],
                                                 order_id='')
         await state.update_data(order_id=sale_session['Number'])
-        await callback.message.answer(text=f'Проверьте данные о маршруте:\n\n'
-                                           f'<i>Отправление:</i> {sale_session["Departure"]["Name"]}\n'
-                                           f'<i>Прибытие:</i> {sale_session["Destination"]["Name"]}\n'
-                                           f'<i>Дата:</i> {data_trip}\n'
-                                           f'<i>Время:</i> {departure_time}\n'
-                                           f'<i>Место:</i> {seat_num}\n',
-                                      reply_markup=keyboard_confirm())
-
+        await callback.message.edit_text(text=f'Проверьте данные о маршруте:\n\n'
+                                              f'<i>Отправление:</i> {sale_session["Departure"]["Name"]}\n'
+                                              f'<i>Прибытие:</i> {sale_session["Destination"]["Name"]}\n'
+                                              f'<i>Дата:</i> {data_trip}\n'
+                                              f'<i>Время:</i> {departure_time.strftime("%H:%M")}\n'
+                                              f'<i>Место:</i> {seat_num}\n',
+                                         reply_markup=keyboard_confirm())
+        await callback.answer()

@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import Router, F, Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters.callback_data import CallbackData
@@ -17,7 +19,7 @@ router = Router()
 config: Config = load_config()
 
 
-class Order_ticket(StatesGroup):
+class OrderTicket(StatesGroup):
     data_personal = State()
     data_passport = State()
     data_birthday = State()
@@ -41,58 +43,75 @@ async def order_ticket(callback: CallbackQuery, state: FSMContext) -> None:
                                seat_num=seat_num,
                                parent_ticket_seat_num=0)
     await state.update_data(number=result['TicketSeats']['Elements'][0]['TicketNumber'])
-    await callback.message.answer(text='Пришлите Ваши ФИО (например: Иванов Сергей Игоревич)')
-    await state.set_state(state=Order_ticket.data_personal)
+    await callback.message.edit_text(text='Пришлите Ваши ФИО (например: Иванов Сергей Игоревич)',
+                                     reply_markup=None)
+    await state.set_state(state=OrderTicket.data_personal)
 
 
-@router.message(F.text, StateFilter(Order_ticket.data_personal))
+@router.message(F.text, StateFilter(OrderTicket.data_personal))
 async def get_data_personal(message: Message, state: FSMContext, bot: Bot):
     logging.info('get_data_personal')
     name_pattern = re.compile(r'^[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+$')
     if name_pattern.match(message.text):
+        await bot.delete_message(chat_id=message.chat.id,
+                                 message_id=message.message_id-1)
+        await message.delete()
         await state.update_data(name=message.text)
         await message.answer(text='Укажите ваш пол',
                              reply_markup=keyboard_gender())
-        await state.set_state(Order_ticket.data_passport)
     else:
-        await message.answer(text='Некорректные введенные данные, пришлите ФИО в формате: Иванов Сергей Игоревич')
+        msg = await message.answer(text='Некорректные введенные данные, пришлите ФИО в формате: Иванов Сергей Игоревич')
+        await asyncio.sleep(3)
+        await msg.delete()
 
 
 @router.callback_query(F.data.startswith("gender_"))
-async def get_data_gender(calback: CallbackQuery, state: FSMContext, bot: Bot):
+async def get_data_gender(callback: CallbackQuery, state: FSMContext, bot: Bot):
     logging.info('get_data_gender')
-    answer = calback.data.split('_')[-1]
+    answer = callback.data.split('_')[-1]
     if answer == 'male':
         await state.update_data(gender='Мужской')
     else:
         await state.update_data(gender='Женский')
-    await calback.message.answer(text='Пришлите паспортные данные (например: 12 34 123456')
-    await state.set_state(Order_ticket.data_passport)
+    await callback.message.edit_text(text='Пришлите паспортные данные (например: 12 34 123456',
+                                     reply_markup=None)
+    await state.set_state(OrderTicket.data_passport)
 
 
-@router.message(F.text, StateFilter(Order_ticket.data_passport))
+@router.message(F.text, StateFilter(OrderTicket.data_passport))
 async def get_data_pasport(message: Message, state: FSMContext, bot: Bot):
     logging.info('get_data_pasport')
     name_pattern = re.compile(r'\b[0-9]{2}\s?[0-9]{2}\s?[0-9]{6}\b')
     if name_pattern.match(message.text):
+        await bot.delete_message(chat_id=message.chat.id,
+                                 message_id=message.message_id - 1)
+        await message.delete()
         await state.update_data(document_number=message.text)
         await message.answer(text='Укажите дату вашего рождения, в формате: дд-мм-гггг')
-        await state.set_state(Order_ticket.data_birthday)
+        await state.set_state(OrderTicket.data_birthday)
     else:
-        await message.answer(text='Некорректные введенные данные, пришлите данные в формате: 12 34 123456')
+        msg = await message.answer(text='Некорректные введенные данные, пришлите данные в формате: 12 34 123456')
+        await asyncio.sleep(3)
+        await msg.delete()
 
 
-@router.message(F.text, StateFilter(Order_ticket.data_birthday))
+@router.message(F.text, StateFilter(OrderTicket.data_birthday))
 async def get_data_birthday(message: Message, state: FSMContext, bot: Bot):
     logging.info('get_data_pasport')
     birthday_pattern = re.compile(r'\b(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-([0-9]{4})\b')
     if birthday_pattern.match(message.text):
+        await bot.delete_message(chat_id=message.chat.id,
+                                 message_id=message.message_id - 1)
+        await message.delete()
+        await state.update_data(document_number=message.text)
         await state.update_data(birthday=message.text)
         await message.answer(text='Укажите ваше гражданство',
                              reply_markup=keyboard_citizenship())
-        await state.set_state(Order_ticket.citizenship)
+        await state.set_state(OrderTicket.citizenship)
     else:
-        await message.answer(text='Некорректные введенные данные, пришлите данные в формате: дд-мм-гггг')
+        msg = await message.answer(text='Некорректные введенные данные, пришлите данные в формате: дд-мм-гггг')
+        await asyncio.sleep(3)
+        await msg.delete()
 
 
 @router.callback_query(F.data == 'citizenship_RUSSIA')
@@ -100,14 +119,19 @@ async def get_citizenship(callback: CallbackQuery, state: FSMContext) -> None:
     logging.info(f'get_citizenship')
     await state.set_state(state=None)
     await state.update_data(citizenship='РОССИЯ')
+    await callback.message.delete()
     await get_ticket_data(state=state, message=callback.message)
 
 
-@router.message(F.text, StateFilter(Order_ticket.data_birthday))
+@router.message(F.text, StateFilter(OrderTicket.data_birthday))
 async def get_citizenship_other(message: Message, state: FSMContext, bot: Bot):
     logging.info('get_citizenship_other')
     await state.set_state(state=None)
     await state.update_data(citizenship=message.text)
+    await bot.delete_message(chat_id=message.chat.id,
+                             message_id=message.message_id - 1)
+    await message.delete()
+    await state.update_data(document_number=message.text)
     await get_ticket_data(state=state, message=message)
 
 
