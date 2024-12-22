@@ -175,9 +175,9 @@ async def get_data_pasport(message: Message, state: FSMContext, bot: Bot):
                           data=message.text)
         user: User = await get_user(tg_id=message.from_user.id)
         if user.birthday == 'default':
-            await message.edit_text(text='Укажите дату вашего рождения, в формате: дд-мм-гггг')
+            await message.answer(text='Укажите дату вашего рождения, в формате: дд-мм-гггг')
         else:
-            await message.edit_text(text='Укажите дату вашего рождения, в формате: дд-мм-гггг',
+            await message.answer(text='Укажите дату вашего рождения, в формате: дд-мм-гггг',
                                     reply_markup=keyboard_birthday(birthday=user.birthday))
         await state.set_state(OrderTicket.data_birthday)
     else:
