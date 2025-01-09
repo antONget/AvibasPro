@@ -14,7 +14,7 @@ config: Config = load_config()
 
 @router.callback_query(F.data.startswith('router_'))
 @error_handler
-async def set_calendar(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
+async def select_num_router(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     """
     Выбор свободного места на выбранный рейс
     :param callback: router_{rout[0]}
@@ -23,7 +23,7 @@ async def set_calendar(callback: CallbackQuery, state: FSMContext, bot: Bot) -> 
     :param bot:
     :return:
     """
-    logging.info(f'set_calendar')
+    logging.info(f'select_num_router')
     trip_id = callback.data.split('_')[-1]
     data = await state.get_data()
     occupied_seats = await get_occupied_seats(trip_id=trip_id,
@@ -86,7 +86,7 @@ async def select_count_block(callback: CallbackQuery, state: FSMContext, bot: Bo
 
 @router.callback_query(F.data.startswith('select_seat_'))
 @error_handler
-async def select_seat_(callback: CallbackQuery, state: FSMContext, bot: Bot):
+async def select_seat_num(callback: CallbackQuery, state: FSMContext, bot: Bot):
     """
     Обработка выбранного места
     :param callback:
@@ -94,7 +94,7 @@ async def select_seat_(callback: CallbackQuery, state: FSMContext, bot: Bot):
     :param bot:
     :return:
     """
-    logging.info('select_seat_')
+    logging.info('select_seat_num')
     seat: str = callback.data.split('_')[-1]
     if seat == 'default':
         await callback.answer()
@@ -106,6 +106,7 @@ async def select_seat_(callback: CallbackQuery, state: FSMContext, bot: Bot):
         data = await state.get_data()
         data_trip = data['data_trip']
         departure_time = data['departure_time']
+        print('trip_id', data['trip_id'], 'departure', data['departure'], 'destination', data['destination'], 'order_id', '')
         sale_session = await start_sale_session(trip_id=data['trip_id'],
                                                 departure=data['departure'],
                                                 destination=data['destination'],

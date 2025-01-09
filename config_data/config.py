@@ -7,6 +7,9 @@ class TgBot:
     token: str
     admin_ids: str
     support_id: int
+    redis_url: str
+    yookassa_id: int
+    yookassa_key: str
 
 
 @dataclass
@@ -19,4 +22,7 @@ def load_config(path: str = None) -> Config:
     env.read_env(path)
     return Config(tg_bot=TgBot(token=env('BOT_TOKEN'),
                                admin_ids=env('ADMIN_IDS'),
-                               support_id=env('SUPPORT_ID')))
+                               support_id=env('SUPPORT_ID'),
+                               redis_url=env('REDIS_URL'),
+                               yookassa_id=env('YOOKASSA_ID'),
+                               yookassa_key=env('YOOKASSA_KEY')))

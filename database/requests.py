@@ -24,6 +24,8 @@ class UserAttribute:
     birthday = "birthday"
     gender = "gender"
     citizenship = "citizenship"
+    phone = "phone"
+    email = "email"
 
 
 async def add_user(data: dict) -> None:
@@ -64,9 +66,21 @@ async def update_user(tg_id: int, attribute: UserAttribute, data: str) -> None:
                 user.gender = data
             elif attribute == 'citizenship':
                 user.citizenship = data
+            elif attribute == 'email':
+                user.email = data
+            elif attribute == 'phone':
+                user.phone = data
             await session.commit()
 
 """TICKETS"""
+
+
+@dataclass()
+class StatusTicket:
+    payment = "payment"
+    reserve = "reserve"
+    cancel = "cancel"
+    refund = "refund"
 
 
 async def add_ticket(data: dict) -> None:
@@ -74,3 +88,46 @@ async def add_ticket(data: dict) -> None:
     async with async_session() as session:
         session.add(Tiket(**data))
         await session.commit()
+
+
+async def update_ticket(id_order: str, status_payment: str, data_ticket: str = None) -> None:
+    logging.info(f'update_ticket')
+    async with async_session() as session:
+        ticket = await session.scalar(select(Tiket).where(Tiket.id_order == id_order))
+        if ticket:
+            if data_ticket:
+                ticket.data_ticket = data_ticket
+            ticket.status_payment = status_payment
+            await session.commit()
+
+
+async def update_cancellation_details(id_order: str, cancellation_details: str) -> None:
+    logging.info(f'update_cancellation_details')
+    async with async_session() as session:
+        ticket = await session.scalar(select(Tiket).where(Tiket.id_order == id_order))
+        if ticket:
+            ticket.cancellation_details = cancellation_details
+            await session.commit()
+
+
+async def get_tickets_user(tg_id: int) -> list[Tiket]:
+    logging.info('get_tickets_user')
+    async with async_session() as session:
+        tickets = await session.scalars(select(Tiket).where(Tiket.tg_id == tg_id, Tiket.status_payment == StatusTicket.payment))
+        list_ticket = [ticket for ticket in tickets]
+
+        if list_ticket:
+            return list_ticket
+        else:
+            return []
+
+
+async def get_ticket_user_id_order(id_order: str) -> Tiket:
+    """
+    Получение информации о билете по его id_order
+    :param id_order:
+    :return:
+    """
+    logging.info('get_ticket_user_id_order')
+    async with async_session() as session:
+        return await session.scalar(select(Tiket).where(Tiket.id_order == id_order))

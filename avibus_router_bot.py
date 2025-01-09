@@ -1,24 +1,20 @@
-import asyncio
-import logging
-import traceback
-
 from aiogram import Bot, Dispatcher
-from aiogram.types import FSInputFile, User
-from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.types import ErrorEvent
-
 
 from config_data.config import Config, load_config
 from handlers import user_handlers_select_station,\
                      user_handlers_select_datetime, \
                      user_handlers_select_seat, \
                      user_handlers_order_ticket, \
+                     user_handlers_add_luggage, \
+                     user_handlers_my_tickets, \
                      other_handlers
+
 from notify_admins import on_startup_notify
 from database.models import async_main
-
+import asyncio
+import logging
 logger = logging.getLogger(__name__)
 
 
@@ -49,19 +45,11 @@ async def main():
     dp.include_router(user_handlers_select_datetime.router)
     dp.include_router(user_handlers_select_seat.router)
     dp.include_router(user_handlers_order_ticket.router)
+    dp.include_router(user_handlers_add_luggage.router)
+    dp.include_router(user_handlers_my_tickets.router)
     dp.include_router(other_handlers.router)
 
-    @dp.error()
-    async def error_handler(event: ErrorEvent):
-        logger.critical("Критическая ошибка: %s", event.exception, exc_info=True)
-        await bot.send_message(chat_id=config.tg_bot.support_id,
-                               text=f'{event.exception}')
-        formatted_lines = traceback.format_exc()
-        text_file = open('error.txt', 'w')
-        text_file.write(str(formatted_lines))
-        text_file.close()
-        await bot.send_document(chat_id=config.tg_bot.support_id,
-                                document=FSInputFile('error.txt'))
+
 
     # Пропускаем накопившиеся update и запускаем polling
     await bot.delete_webhook(drop_pending_updates=True)

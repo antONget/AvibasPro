@@ -5,16 +5,19 @@ from zeep.transports import Transport
 from requests.auth import HTTPBasicAuth
 import requests
 import asyncio
+import json
 
 # Определяем учётные данные
 username_test = 'wsuser'
 password_test = 'sales'
-username = 'Hindikainen'
+# username = 'Hindikainen'
+username = 'Konorev'
 password = 'By0xo3bu'
 unicode_string = username
 encoded_string = unicode_string.encode("utf-8")
 # Указываем URL WSDL SOAP-службы
 wsdl_test = 'http://dev.avibus.pro/UEEDev/ws/saleport?wsdl'
+# wsdl_test = 'http://dev.avibus.pro/UEEDev/ws/scheduleport?wsdl'
 wsdl = 'https://saas.avibus.pro/a/BTMS/1120/ws/saleport?wsdl'
 
 # Создаём сессию с базовой аутентификацией
@@ -60,7 +63,9 @@ async def get_bus_stops() -> list[dict]:
     """
     logging.info('get_bus_stops')
     bus_stops = client.service.GetBusStops()
-    # print('BUS_STOPS', bus_stops, sep='\n')
+    text_file = open('ANSWER/BUS_STOPS.txt', 'w')
+    text_file.write(str(bus_stops))
+    text_file.close()
     return bus_stops
 
 
@@ -91,9 +96,12 @@ async def get_destinations(departure: str) -> list[dict]:
         'Phone': None
     },...]
     """
+    logging.info('get_destinations')
     destinations = client.service.GetDestinations(Substring='',
                                                   Departure=departure)
-    # print('DESTINATIONS', destinations, sep='\n')
+    text_file = open('ANSWER/DESTINATIONS.txt', 'w')
+    text_file.write(str(destinations))
+    text_file.close()
     return destinations
 
 
@@ -454,10 +462,13 @@ async def get_trips(departure: str, destination: str, trips_date: str):
     'Destination': 'f002482e-e507-11ee-893e-d00d4cbcd401'
     }
     """
+    logging.info('get_trips')
     trips = client.service.GetTrips(Departure=departure,
                                     Destination=destination,
                                     TripsDate=trips_date)
-    # print('TRIPS', trips)
+    text_file = open('ANSWER/TRIPS.txt', 'w')
+    text_file.write(str(trips))
+    text_file.close()
     return trips
 
 
@@ -1563,10 +1574,13 @@ async def get_trips_segment(trip_id: str, departure: str, destination: str):
 }
 
     """
+    logging.info('get_trips_segment')
     trips_segment = client.service.GetTripSegment(TripId=trip_id,
                                                   Departure=departure,
                                                   Destination=destination)
-    # print("TRIPS_SEGMENT", trips_segment, sep='\n')
+    text_file = open('ANSWER/TRIPS_SEGMENT.txt', 'w')
+    text_file.write(str(trips_segment))
+    text_file.close()
     return trips_segment
 
 
@@ -2023,34 +2037,58 @@ async def get_occupied_seats(trip_id: str, departure: str, destination: str, ord
 }
 
     """
+    logging.info('get_occupied_seats')
     occupied_seats = client.service.GetOccupiedSeats(TripId=trip_id,
                                                      Departure=departure,
                                                      Destination=destination,
                                                      OrderId=order_id)
-    # print("OCCUPIED_SEATS", occupied_seats, sep='\n')
+    text_file = open('ANSWER/OCCUPIED_SEATS.txt', 'w')
+    text_file.write(str(occupied_seats))
+    text_file.close()
     return occupied_seats
 
 
 async def start_sale_session(trip_id: str, departure: str, destination: str, order_id: str):
-    return client.service.StartSaleSession(TripId=trip_id,
-                                           Departure=departure,
-                                           Destination=destination,
-                                           OrderId=order_id)
+    # xml = f'''
+    # <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sal="http://www.unistation.ru/saleport" xmlns:xdto="http://www.unistation.ru/xdto">
+    # <soapenv:Header/>
+    #    <soapenv:Body>
+    #     <sal:TripId>{trip_id}</sal:TripId>
+    #     <sal:Departure>{departure}</sal:Departure>
+    #     <sal:Destination>{destination}</sal:Destination>
+    #     <sal:OrderId>{order_id}</sal:OrderId>
+    #    </soapenv:Body>
+    # </soapenv:Envelope>
+    # '''
+    # sale_session = client.service.StartSaleSession(xml)
+    logging.info('start_sale_session')
+    sale_session = client.service.StartSaleSession(TripId=trip_id,
+                                                   Departure=departure,
+                                                   Destination=destination,
+                                                   OrderId=order_id)
+    text_file = open('ANSWER/SALE_SESSION.txt', 'w')
+    text_file.write(str(sale_session))
+    text_file.close()
+    return sale_session
 
 
 async def add_tickets(order_id: str, fare_name: str, seat_num: int, parent_ticket_seat_num: int):
+    logging.info('add_tickets')
     TicketSeats = client.get_type('ns0:TicketSeats')
     add_ticket = client.service.AddTickets(OrderId=order_id,
                                            TicketSeats=TicketSeats(Elements={"FareName": fare_name,
                                                                              "SeatNum": seat_num,
                                                                              "ParentTicketSeatNum":
                                                                                  parent_ticket_seat_num}))
-    print(add_ticket)
+    text_file = open('ANSWER/ADD_TICKET.txt', 'w')
+    text_file.write(str(add_ticket))
+    text_file.close()
     return add_ticket
 
 
 async def set_ticket_data(order_id: str, number: str, seat_num: int, fare_name: str, name: str, document_number: str,
                           document: str, birthday: str, gender: str, citizenship: str):
+    logging.info('set_ticket_data')
     Tickets = client.get_type('ns0:Tickets')
     ticket_data = client.service.SetTicketData(OrderId=order_id,
                                                Tickets=Tickets(Elements={"Number": number,
@@ -2067,12 +2105,15 @@ async def set_ticket_data(order_id: str, number: str, seat_num: int, fare_name: 
                                                                                            "Value": gender},
                                                                                           {"Name": "Гражданство",
                                                                                            "Value": citizenship}]}))
-    print(ticket_data)
+    text_file = open('ANSWER/TICKET_DATA.txt', 'w')
+    text_file.write(str(ticket_data))
+    text_file.close()
     return ticket_data
 
 
 async def reserve_order(order_id: str, name: str = "Name", phone: str = "+71112223333",
                         email: str = 'example@mail.com', comment: str = 'comment'):
+    logging.info('reserve_order')
     Customer = client.get_type('ns0:Customer')
     ChequeSettings = client.get_type('ns0:ChequeSettings')
     reserve = client.service.ReserveOrder(OrderId=order_id,
@@ -2081,28 +2122,67 @@ async def reserve_order(order_id: str, name: str = "Name", phone: str = "+711122
                                                             Email=email,
                                                             Comment=comment),
                                           ReserveKind='',
-                                          ChequeSettings=ChequeSettings(ChequeWidth=48))
-    print(reserve)
+                                          ChequeSettings=ChequeSettings(ChequeWidth=48,
+                                                                        TaggedText=True))
+    text_file = open('ANSWER/RESERVE.txt', 'w')
+    text_file.write(str(reserve))
+    text_file.close()
     return reserve
 
 
 async def payment_ticket(order_id: str, amount: str):
+    logging.info('payment_ticket')
     PaymentItems = client.get_type('ns0:PaymentItems')
     ChequeSettings = client.get_type('ns0:ChequeSettings')
     payment = client.service.Payment(OrderId=order_id,
                                      PaymentItems=PaymentItems(Elements={"PaymentType": "PaymentCard",
                                                                          "Amount": amount}),
                                      ChequeSettings=ChequeSettings(ChequeWidth=48))
-    print(payment)
+
+    text_file = open('ANSWER/PAYMENT.txt', 'w')
+    text_file.write(str(payment))
+    text_file.close()
     return payment
 
 
-async def get_available_privileges(order_id: str, ticket_number: str):
-    available_privileges = client.service.GetAvailablePrivileges(OrderId=order_id,
-                                                                 TicketNumber=ticket_number)
-    print('AVAILABLE_PRIVILEGES', available_privileges, sep='\n')
-    return available_privileges
+async def add_ticket_return(ticket_number: str, departure_id: str, order_id: str, seat_num: int = ''):
+    logging.info('add_ticket_return')
+    add_ticket_return = client.service.AddTicketReturn(TicketNumber=ticket_number,
+                                                       SeatNum=seat_num,
+                                                       Departure=departure_id,
+                                                       ReturnOrderId='')
+
+    text_file = open('ANSWER/ADD_TICKET_RETURN.txt', 'w')
+    text_file.write(str(add_ticket_return))
+    text_file.close()
+    return add_ticket_return
+
+
+async def return_payment(return_order_id: str, terminal_id: int, terminal_session_id: int, payment_type: str, amount: str):
+    logging.info('set_return_payment')
+    PaymentItems = client.get_type('ns0:PaymentItems')
+    ChequeSettings = client.get_type('ns0:ChequeSettings')
+    return_payment = client.service.ReturnPayment(ReturnOrderId=return_order_id,
+                                                  TerminalId=terminal_id,
+                                                  TerminalSessionId=terminal_session_id,
+                                                  PaymentItems=PaymentItems(Elements={"PaymentType": payment_type,
+                                                                                      "Amount": amount}),
+                                                  ChequeSettings=ChequeSettings(ChequeWidth=48))
+
+    text_file = open('ANSWER/RETURN_PAYMENT.txt', 'w')
+    text_file.write(str(return_payment))
+    text_file.close()
+    return return_payment
+
 
 if __name__ == "__main__":
     # asyncio.run(add_tickets(order_id='00000022788', fare_name='Пассажирский', seat_num=0, parent_ticket_seat_num=0))
-    asyncio.run(get_available_privileges(order_id='00000000166', ticket_number='00000000166010'))
+    # asyncio.run(add_ticket_return(ticket_number='00000000278010',
+    #                               departure_id='80979b40-5d41-11ee-8668-d00d4cbcd401',
+    #                               order_id='',
+    #                               seat_num=1))
+    asyncio.run(return_payment(return_order_id='00000000128',
+                               terminal_id=0,
+                               terminal_session_id=0,
+                               payment_type='Other',
+                               amount='20'))

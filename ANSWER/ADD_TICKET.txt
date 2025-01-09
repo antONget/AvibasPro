@@ -1,0 +1,598 @@
+{
+    'return': {
+        'Number': '00000000279',
+        'Trip': {
+            'Id': '32c2a2d0-ae52-11ef-9db8-0a01e80df301',
+            'RouteId': '1aefeb16-e5e6-11ee-94e0-d00d4cbcd401',
+            'ScheduleTripId': '4371e6ce-023e-11ef-8377-d00d4cbcd401',
+            'RouteName': 'Санкт-Петербург АВ № 2 — Шугозеро п., 869 , Пригородное',
+            'RouteNum': '869',
+            'Carrier': 'ИП Гиляев',
+            'Bus': {
+                'Id': 'f5e5fea0-e46e-11ee-944a-d00d4cbcd401',
+                'Model': 'HIGER KLQ6119TQ',
+                'LicencePlate': 'с763ер198',
+                'Name': 'HIGER KLQ6119TQ (55), с763ер198',
+                'SeatsClass': 'Стандартный',
+                'SeatCapacity': 55,
+                'StandCapacity': 0,
+                'BaggageCapacity': 55,
+                'SeatsScheme': [],
+                'GarageNum': None,
+                'AdditionalAtrributes': []
+            },
+            'Driver1': 'Шаламов Юрий Викторович',
+            'Driver2': None,
+            'Frequency': 'Ежедневно',
+            'WaybillNum': None,
+            'Status': None,
+            'StatusPrint': None,
+            'StatusReason': None,
+            'StatusComment': None,
+            'StatusDate': None,
+            'Departure': {
+                'Name': 'Санкт-Петербург АВ № 2',
+                'Code': '00-000001',
+                'Id': '80979b40-5d41-11ee-8668-d00d4cbcd401',
+                'Country': 'РОССИЯ',
+                'Region': 'Санкт-Петербург',
+                'District': None,
+                'Automated': True,
+                'HasDestinations': True,
+                'UTC': Decimal('3'),
+                'GPSCoordinates': '59.91344100,30.35763300',
+                'LocationType': 'В населенном пункте',
+                'Locality': None,
+                'StoppingPlace': None,
+                'Address': 'Санкт-Петербург, набережная Обводного канала, 36',
+                'Phone': None
+            },
+            'DepartureTime': datetime.datetime(2025, 1, 31, 9, 0),
+            'ArrivalToDepartureTime': None,
+            'Destination': {
+                'Name': 'Ганьково д. (из СПб)',
+                'Code': '00-000044',
+                'Id': 'cdfd90a6-e5ea-11ee-94e0-d00d4cbcd401',
+                'Country': 'РОССИЯ',
+                'Region': 'Ленинградская область',
+                'District': 'Тихвинский район',
+                'Automated': True,
+                'HasDestinations': True,
+                'UTC': Decimal('3'),
+                'GPSCoordinates': '59.892621,33.798427',
+                'LocationType': 'В населенном пункте',
+                'Locality': None,
+                'StoppingPlace': None,
+                'Address': 'деревня Ганьково, Россия',
+                'Phone': None
+            },
+            'ArrivalTime': datetime.datetime(2025, 1, 31, 13, 34),
+            'Distance': Decimal('260'),
+            'Duration': 274,
+            'TransitSeats': None,
+            'FreeSeatsAmount': None,
+            'PassengerFareCost': None,
+            'Fares': [],
+            'Platform': 0,
+            'OnSale': None,
+            'Route': [],
+            'Additional': False,
+            'AdditionalTripTime': [],
+            'TransitTrip': None,
+            'SaleStatus': None,
+            'ACBPDP': None,
+            'FactTripReturnTime': None,
+            'Currency': 'RUB',
+            'PrincipalTaxId': None,
+            'AdditionalAttributes': [],
+            'CarrierData': {
+                'CarrierName': 'Индивидуальный предприниматель Гиляев Михаил Викторович',
+                'CarrierTaxId': '782506314950',
+                'CarrierStateRegNum': '312784722000369',
+                'CarrierPersonalData': [
+                    {
+                        'Name': 'ФИО',
+                        'Caption': 'ФИО',
+                        'Mandatory': False,
+                        'PersonIdentifier': False,
+                        'Type': 'String',
+                        'ValueVariants': [],
+                        'InputMask': None,
+                        'Value': 'Гиляев Михаил Викторович',
+                        'ValueKind': None,
+                        'DefaultValueVariant': {
+                            'Name': None,
+                            'InputMask': None,
+                            'ValueProperty1': None,
+                            'ValueProperty2': None,
+                            'ValueProperty3': None,
+                            'ValueProperty4': None,
+                            'ValueProperty5': None
+                        },
+                        'DocumentIssueDateRequired': None,
+                        'DocumentIssueOrgRequired': None,
+                        'DocumentValidityDateRequired': None,
+                        'DocumentInceptionDateRequired': None,
+                        'DocumentIssuePlaceRequired': None,
+                        'Value1': None,
+                        'Value2': None,
+                        'Value3': None,
+                        'Value4': None,
+                        'Value5': None,
+                        'Group': None,
+                        'ReadOnly': None
+                    },
+                    {
+                        'Name': 'Мобильный телефон',
+                        'Caption': 'Мобильный телефон',
+                        'Mandatory': False,
+                        'PersonIdentifier': False,
+                        'Type': 'ContactInformation',
+                        'ValueVariants': [
+                            {
+                                'Name': 'Мобильный телефон',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            }
+                        ],
+                        'InputMask': None,
+                        'Value': ' +79219613191',
+                        'ValueKind': None,
+                        'DefaultValueVariant': {
+                            'Name': 'Мобильный телефон',
+                            'InputMask': None,
+                            'ValueProperty1': None,
+                            'ValueProperty2': None,
+                            'ValueProperty3': None,
+                            'ValueProperty4': None,
+                            'ValueProperty5': None
+                        },
+                        'DocumentIssueDateRequired': None,
+                        'DocumentIssueOrgRequired': None,
+                        'DocumentValidityDateRequired': None,
+                        'DocumentInceptionDateRequired': None,
+                        'DocumentIssuePlaceRequired': None,
+                        'Value1': None,
+                        'Value2': None,
+                        'Value3': None,
+                        'Value4': None,
+                        'Value5': None,
+                        'Group': None,
+                        'ReadOnly': None
+                    }
+                ],
+                'CarrierAddress': '195067, г Санкт-Петербург, пр Екатерининский, д. 3, литера А, офис оф. А-217',
+                'CarrierWorkingHours': '06:00 - 21:00'
+            },
+            'CheckMan': None
+        },
+        'Departure': {
+            'Name': 'Санкт-Петербург АВ № 2',
+            'Code': '00-000001',
+            'Id': '80979b40-5d41-11ee-8668-d00d4cbcd401',
+            'Country': 'РОССИЯ',
+            'Region': 'Санкт-Петербург',
+            'District': None,
+            'Automated': True,
+            'HasDestinations': True,
+            'UTC': Decimal('3'),
+            'GPSCoordinates': '59.91344100,30.35763300',
+            'LocationType': 'В населенном пункте',
+            'Locality': None,
+            'StoppingPlace': None,
+            'Address': 'Санкт-Петербург, набережная Обводного канала, 36',
+            'Phone': None
+        },
+        'DepartureTime': datetime.datetime(2025, 1, 31, 9, 0),
+        'Destination': {
+            'Name': 'Ганьково д. (из СПб)',
+            'Code': '00-000044',
+            'Id': 'cdfd90a6-e5ea-11ee-94e0-d00d4cbcd401',
+            'Country': 'РОССИЯ',
+            'Region': 'Ленинградская область',
+            'District': 'Тихвинский район',
+            'Automated': True,
+            'HasDestinations': True,
+            'UTC': Decimal('3'),
+            'GPSCoordinates': '59.892621,33.798427',
+            'LocationType': 'В населенном пункте',
+            'Locality': None,
+            'StoppingPlace': None,
+            'Address': 'деревня Ганьково, Россия',
+            'Phone': None
+        },
+        'Tickets': [
+            {
+                'Number': '00000000279017',
+                'Date': datetime.datetime(2025, 1, 9, 16, 52, 54),
+                'TripId': '32c2a2d0-ae52-11ef-9db8-0a01e80df301',
+                'Carrier': 'ИП Гиляев',
+                'ParentTicketSeatNum': 0,
+                'SeatType': 'Passenger',
+                'SeatNum': '3',
+                'FareName': 'Пассажирский',
+                'PrivilageName': None,
+                'Calculation': {
+                    'FareDiscount': Decimal('0'),
+                    'FareAmount': Decimal('800'),
+                    'Fees': [],
+                    'TotalDiscount': Decimal('0'),
+                    'TotalAmount': Decimal('800')
+                },
+                'Departure': {
+                    'Name': 'Санкт-Петербург АВ № 2',
+                    'Code': '00-000001',
+                    'Id': '80979b40-5d41-11ee-8668-d00d4cbcd401',
+                    'Country': 'РОССИЯ',
+                    'Region': 'Санкт-Петербург',
+                    'District': None,
+                    'Automated': True,
+                    'HasDestinations': True,
+                    'UTC': Decimal('3'),
+                    'GPSCoordinates': '59.91344100,30.35763300',
+                    'LocationType': 'В населенном пункте',
+                    'Locality': None,
+                    'StoppingPlace': None,
+                    'Address': 'Санкт-Петербург, набережная Обводного канала, 36',
+                    'Phone': None
+                },
+                'DepartureTime': datetime.datetime(2025, 1, 31, 9, 0),
+                'Destination': {
+                    'Name': 'Ганьково д. (из СПб)',
+                    'Code': '00-000044',
+                    'Id': 'cdfd90a6-e5ea-11ee-94e0-d00d4cbcd401',
+                    'Country': 'РОССИЯ',
+                    'Region': 'Ленинградская область',
+                    'District': 'Тихвинский район',
+                    'Automated': True,
+                    'HasDestinations': True,
+                    'UTC': Decimal('3'),
+                    'GPSCoordinates': '59.892621,33.798427',
+                    'LocationType': 'В населенном пункте',
+                    'Locality': None,
+                    'StoppingPlace': None,
+                    'Address': 'деревня Ганьково, Россия',
+                    'Phone': None
+                },
+                'ArrivalTime': datetime.datetime(2025, 1, 31, 13, 34),
+                'Distance': Decimal('260'),
+                'PassengerName': None,
+                'PassengerDoc': None,
+                'PersonalData': [
+                    {
+                        'Name': 'Удостоверение',
+                        'Caption': 'Удостоверение',
+                        'Mandatory': True,
+                        'PersonIdentifier': True,
+                        'Type': 'IdentificationDocument',
+                        'ValueVariants': [
+                            {
+                                'Name': 'Паспорт гражданина РФ',
+                                'InputMask': '99 99 999999',
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Удостоверение личности моряка(паспорт моряка)',
+                                'InputMask': 'UU 9999999',
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Загранпаспорт гражданина РФ',
+                                'InputMask': '99 9999999',
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Паспорт иностранного гражданина',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Свидетельство о рождении',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Удостоверение личности военнослужащего',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Удостоверение личности лица без гражданства',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Временное удостоверение личности',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Военный билет',
+                                'InputMask': 'UU 9999999',
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Вид на жительство',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Справка об освобождении из мест лишения свободы',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Паспорт гражданина СССР',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Дипломатический паспорт гражданина РФ',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Удостоверение депутата',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Справка об утере паспорта',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Служебный паспорт',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Свидетельство о предоставлении временного убежища',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Свидетельство о возвращении из стран СНГ',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Паспорт Минморфлота',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Военный билет офицера запаса',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            }
+                        ],
+                        'InputMask': None,
+                        'Value': None,
+                        'ValueKind': None,
+                        'DefaultValueVariant': {
+                            'Name': 'Паспорт гражданина РФ',
+                            'InputMask': '99 99 999999',
+                            'ValueProperty1': None,
+                            'ValueProperty2': None,
+                            'ValueProperty3': None,
+                            'ValueProperty4': None,
+                            'ValueProperty5': None
+                        },
+                        'DocumentIssueDateRequired': None,
+                        'DocumentIssueOrgRequired': None,
+                        'DocumentValidityDateRequired': None,
+                        'DocumentInceptionDateRequired': None,
+                        'DocumentIssuePlaceRequired': None,
+                        'Value1': None,
+                        'Value2': None,
+                        'Value3': None,
+                        'Value4': None,
+                        'Value5': None,
+                        'Group': 'Тариф',
+                        'ReadOnly': False
+                    },
+                    {
+                        'Name': 'ФИО',
+                        'Caption': 'ФИО',
+                        'Mandatory': True,
+                        'PersonIdentifier': False,
+                        'Type': 'String',
+                        'ValueVariants': [],
+                        'InputMask': None,
+                        'Value': None,
+                        'ValueKind': None,
+                        'DefaultValueVariant': {
+                            'Name': None,
+                            'InputMask': None,
+                            'ValueProperty1': None,
+                            'ValueProperty2': None,
+                            'ValueProperty3': None,
+                            'ValueProperty4': None,
+                            'ValueProperty5': None
+                        },
+                        'DocumentIssueDateRequired': None,
+                        'DocumentIssueOrgRequired': None,
+                        'DocumentValidityDateRequired': None,
+                        'DocumentInceptionDateRequired': None,
+                        'DocumentIssuePlaceRequired': None,
+                        'Value1': None,
+                        'Value2': None,
+                        'Value3': None,
+                        'Value4': None,
+                        'Value5': None,
+                        'Group': 'Тариф',
+                        'ReadOnly': False
+                    }
+                ],
+                'AdditionalAttributes': [
+                    {
+                        'Name': 'Место посадки',
+                        'Caption': 'Место посадки',
+                        'Mandatory': False,
+                        'Type': 'ValueList',
+                        'ValueVariants': [
+                            {
+                                'Name': 'Санкт-Петербург Станция метро Улица Дыбенко (отправление)',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Санкт-Петербург ЛОКБ',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            },
+                            {
+                                'Name': 'Санкт-Петербург ст.метро Девяткино (Мурино)',
+                                'InputMask': None,
+                                'ValueProperty1': None,
+                                'ValueProperty2': None,
+                                'ValueProperty3': None,
+                                'ValueProperty4': None,
+                                'ValueProperty5': None
+                            }
+                        ],
+                        'InputMask': None,
+                        'Value': None,
+                        'CostAttribute': True,
+                        'Group': None
+                    }
+                ],
+                'Cheques': [],
+                'Absence': False,
+                'FaultDistance': Decimal('0'),
+                'FaultCarrier': None,
+                'Customer': None,
+                'MarketingCampaign': None,
+                'BusstationFee': None,
+                'ManualEntryOfTickets': None
+            }
+        ],
+        'OccupiedSeats': [
+            {
+                'Type': 'Passenger',
+                'Number': 1,
+                'Status': 'Sold',
+                'ParentTicketSeatNum': 0,
+                'ForCurrentOrder': False
+            },
+            {
+                'Type': 'Passenger',
+                'Number': 3,
+                'Status': 'OnMySale',
+                'ParentTicketSeatNum': 0,
+                'ForCurrentOrder': True
+            }
+        ],
+        'Amount': Decimal('800'),
+        'Customer': None,
+        'Services': None,
+        'SecondsToUnlockSeats': 120,
+        'Reserve': None,
+        'LoyaltyCard': None,
+        'Currency': None
+    },
+    'TicketSeats': {
+        'Elements': [
+            {
+                'FareName': 'Пассажирский',
+                'SeatNum': 3,
+                'Destination': 'Ганьково д. (из СПб)',
+                'TicketNumber': '00000000279017',
+                'ParentTicketSeatNum': None
+            }
+        ]
+    }
+}

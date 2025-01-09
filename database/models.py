@@ -13,7 +13,6 @@ class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
-
 class User(Base):
     __tablename__ = 'users'
     tg_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -24,13 +23,29 @@ class User(Base):
     birthday: Mapped[str] = mapped_column(String(), default='default')
     gender: Mapped[str] = mapped_column(String(), default='default')
     citizenship: Mapped[str] = mapped_column(String(), default='default')
+    phone: Mapped[str] = mapped_column(String(), default='default')
+    email: Mapped[str] = mapped_column(String(), default='default')
+
 
 class Tiket(Base):
     __tablename__ = 'tikets'
-
-    tg_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id_ticket: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tg_id: Mapped[int] = mapped_column(BigInteger)
     id_order: Mapped[str] = mapped_column(String())
     ticket_number: Mapped[str] = mapped_column(String())
+    amount: Mapped[str] = mapped_column(String(), default='default')
+    data_ticket: Mapped[str] = mapped_column(String(), default='default')
+    id_departure: Mapped[str] = mapped_column(String(), default='default')
+    departure: Mapped[str] = mapped_column(String(), default='default')
+    id_destination: Mapped[str] = mapped_column(String(), default='default')
+    destination: Mapped[str] = mapped_column(String(), default='default')
+    departure_time: Mapped[str] = mapped_column(String(), default='default')
+    departure_data: Mapped[str] = mapped_column(String(), default='default')
+    arrival_time: Mapped[str] = mapped_column(String(), default='default')
+    arrival_data: Mapped[str] = mapped_column(String(), default='default')
+    payment_id: Mapped[str] = mapped_column(String(), default='default')
+    status_payment: Mapped[str] = mapped_column(String(), default='default')
+    cancellation_details: Mapped[str] = mapped_column(String(), default='default')
 
 
 async def async_main():
