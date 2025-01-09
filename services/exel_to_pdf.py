@@ -5,6 +5,8 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib import colors
+import reportlab
+
 
 # Регистрируем шрифты, поддерживающие кириллицу
 pdfmetrics.registerFont(TTFont("Arial", "arial.ttf"))  # Обычный Arial
@@ -185,5 +187,5 @@ def excel_to_pdf(input_file, output_file):
     c.save()
 
 
-# Пример использования
-excel_to_pdf("112.xlsx", "output.pdf")
+# # Пример использования
+# excel_to_pdf("111.xlsx", "output.pdf")

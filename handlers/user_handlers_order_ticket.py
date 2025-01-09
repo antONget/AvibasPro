@@ -483,8 +483,8 @@ async def get_ticket(callback: CallbackQuery, state: FSMContext) -> None:
                             data_ticket=data_ticket,
                             status_payment=StatusTicket.payment)
         await get_boarding_receipt(dict_check_ticket=dict_check_ticket, user_id=callback.from_user.id)
-        excel_to_pdf(input_file=f'TICKET/{callback.from_user.id}.xlsx',
-                     output_file=f'TICKET/{callback.from_user.id}.pdf')
+        # excel_to_pdf(input_file=f'TICKET/{callback.from_user.id}.xlsx',
+        #              output_file=f'TICKET/{callback.from_user.id}.pdf')
         # await callback.answer(text='Платеж прошел успешно', show_alert=True)
         user: User = await get_user(tg_id=callback.from_user.id)
         await send_email(to_email=user.email,
@@ -495,7 +495,7 @@ async def get_ticket(callback: CallbackQuery, state: FSMContext) -> None:
                                        f'{arrival_data} {arrival_time}\n'
                                        f'Место: {payment["Tickets"][0]["SeatNum"]}',
                          tg_user=callback.from_user.id)
-        await callback.message.answer_document(document=FSInputFile(path=f'TICKET/{callback.from_user.id}.pdf'),
+        await callback.message.answer_document(document=FSInputFile(path=f'TICKET/{callback.from_user.id}.xlsx'),
                                                caption=f'Ваш билет *{order_id}*\n'
                                                        f'Он также направлен вам на email')
     else:

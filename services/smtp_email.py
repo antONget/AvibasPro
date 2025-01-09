@@ -16,7 +16,7 @@ async def send_email(to_email: str, message_email: str, tg_user: int):
     msg['Subject'] = 'Avibus_pro'
     msg.attach(MIMEText(message, 'plain'))
 
-    file_path = f"TICKET/{tg_user}.pdf"
+    file_path = f"TICKET/{tg_user}.xlsx"
     with open(file_path, "rb") as file:
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(file.read())
