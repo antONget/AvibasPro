@@ -50,7 +50,7 @@ def keyboard_citizenship_(citizenship: str) -> InlineKeyboardMarkup:
 
 
 def keyboard_email(email: str) -> InlineKeyboardMarkup:
-    button_1 = InlineKeyboardButton(text=f'{email}', callback_data=f'email_{email}')
+    button_1 = InlineKeyboardButton(text=f'{email}', callback_data=f'email#{email}')
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
     return keyboard
 

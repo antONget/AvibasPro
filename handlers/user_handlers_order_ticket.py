@@ -382,7 +382,7 @@ async def get_email(callback: CallbackQuery, state: FSMContext) -> None:
     logging.info(f'get_email')
     await callback.message.delete()
     await state.set_state(state=None)
-    email = callback.data.split('_')[-1]
+    email = callback.data.split('#')[-1]
     await state.update_data(email=email)
     await update_user(tg_id=callback.from_user.id,
                       attribute=UserAttribute.email,
