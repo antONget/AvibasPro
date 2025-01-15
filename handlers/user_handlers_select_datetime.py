@@ -83,10 +83,12 @@ async def process_simple_calendar_start(callback: CallbackQuery, callback_data: 
         trips: dict = await get_trips(departure=data['departure'],
                                       destination=data['destination'],
                                       trips_date=data_trip)
+        print(data['departure'], data['destination'], data_trip)
         list_router = []
         for rout in trips['Elements']:
             if rout['DepartureTime'] > current_data:
                 list_router.append([rout['Id'], rout['RouteNum'], rout['DepartureTime']])
+                print(rout['Id'], rout['RouteNum'], rout['DepartureTime'])
         if list_router:
             await callback.message.edit_text(text='Выберите <b>РЕЙС</b>',
                                              reply_markup=keyboards_trip(list_routers=list_router))

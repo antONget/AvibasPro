@@ -2,7 +2,7 @@ from aiogram import Router, F, Bot
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from keyboards.user_keyboard_select_seat import keyboards_seat, keyboard_confirm
+from keyboards.user_keyboard_select_seat import keyboards_seat, keyboard_confirm, keyboard_add_luggage
 from services.zeep_soap import get_trips_segment, get_occupied_seats, start_sale_session
 from config_data.config import Config, load_config
 from utils.error_handling import error_handler
@@ -112,6 +112,13 @@ async def select_seat_num(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                                 destination=data['destination'],
                                                 order_id='')
         await state.update_data(order_id=sale_session['Number'])
+        # await callback.message.edit_text(text=f'Проверьте данные о маршруте:\n\n'
+        #                                       f'<i>Отправление:</i> {sale_session["Departure"]["Name"]}\n'
+        #                                       f'<i>Прибытие:</i> {sale_session["Destination"]["Name"]}\n'
+        #                                       f'<i>Дата:</i> {data_trip}\n'
+        #                                       f'<i>Время:</i> {departure_time.strftime("%H:%M")}\n'
+        #                                       f'<i>Место:</i> {seat_num}\n',
+        #                                  reply_markup=keyboard_confirm())
         await callback.message.edit_text(text=f'Проверьте данные о маршруте:\n\n'
                                               f'<i>Отправление:</i> {sale_session["Departure"]["Name"]}\n'
                                               f'<i>Прибытие:</i> {sale_session["Destination"]["Name"]}\n'

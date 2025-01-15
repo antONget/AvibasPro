@@ -4,6 +4,13 @@ from datetime import time, timedelta, datetime
 import logging
 
 
+def keyboard_confirm_ticket_data() -> InlineKeyboardMarkup:
+    button_1 = InlineKeyboardButton(text=f'Подтвердить данные', callback_data=f'ticket_data_confirm')
+    button_2 = InlineKeyboardButton(text=f'Изменить данные', callback_data=f'ticket_data_change')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
+    return keyboard
+
+
 def keyboard_name(name: str) -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text=f'{name}', callback_data=f'name_{name}')
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
@@ -45,6 +52,13 @@ def keyboard_citizenship_(citizenship: str) -> InlineKeyboardMarkup:
 def keyboard_email(email: str) -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text=f'{email}', callback_data=f'email_{email}')
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
+    return keyboard
+
+
+def keyboard_add_luggage() -> InlineKeyboardMarkup:
+    button_1 = InlineKeyboardButton(text='Добавить багаж 🧳', callback_data='add_luggage')
+    button_2 = InlineKeyboardButton(text='Купить билет 🎫', callback_data='pay_ticket')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
     return keyboard
 
 

@@ -27,17 +27,6 @@ session.auth = HTTPBasicAuth(encoded_string, password)
 # Создаём клиент Zeep с базовой аутентификацией
 client = Client(wsdl, transport=Transport(session=session))
 
-# Вызываем необходимые методы SOAP
-# result = client.service.GetBusStops()
-# print(result)
-# bus_stop_Tikhvin = "be1cc470-e52e-11ee-92d2-d00d4cbcd401"  # Тихвин
-# result = client.service.GetDestinations(Substring='',
-#                                         Departure=bus_stop_Tikhvin)
-# result = client.service.GetTrips(Departure="be1cc470-e52e-11ee-92d2-d00d4cbcd401",
-#                                  Destination="80979b40-5d41-11ee-8668-d00d4cbcd401",
-#                                  TripsDate="2024-12-10")
-# print(result)
-
 
 async def get_bus_stops() -> list[dict]:
     """
@@ -466,9 +455,9 @@ async def get_trips(departure: str, destination: str, trips_date: str):
     trips = client.service.GetTrips(Departure=departure,
                                     Destination=destination,
                                     TripsDate=trips_date)
-    text_file = open('ANSWER/TRIPS.txt', 'w')
-    text_file.write(str(trips))
-    text_file.close()
+    # text_file = open('ANSWER/TRIPS.txt', 'w')
+    # text_file.write(str(trips))
+    # text_file.close()
     return trips
 
 
@@ -2066,9 +2055,9 @@ async def start_sale_session(trip_id: str, departure: str, destination: str, ord
                                                    Departure=departure,
                                                    Destination=destination,
                                                    OrderId=order_id)
-    text_file = open('ANSWER/SALE_SESSION.txt', 'w')
-    text_file.write(str(sale_session))
-    text_file.close()
+    # text_file = open('ANSWER/SALE_SESSION.txt', 'w')
+    # text_file.write(str(sale_session))
+    # text_file.close()
     return sale_session
 
 
@@ -2080,9 +2069,9 @@ async def add_tickets(order_id: str, fare_name: str, seat_num: int, parent_ticke
                                                                              "SeatNum": seat_num,
                                                                              "ParentTicketSeatNum":
                                                                                  parent_ticket_seat_num}))
-    text_file = open('ANSWER/ADD_TICKET.txt', 'w')
-    text_file.write(str(add_ticket))
-    text_file.close()
+    # text_file = open('ANSWER/ADD_TICKET.txt', 'w')
+    # text_file.write(str(add_ticket))
+    # text_file.close()
     return add_ticket
 
 
@@ -2105,9 +2094,9 @@ async def set_ticket_data(order_id: str, number: str, seat_num: int, fare_name: 
                                                                                            "Value": gender},
                                                                                           {"Name": "Гражданство",
                                                                                            "Value": citizenship}]}))
-    text_file = open('ANSWER/TICKET_DATA.txt', 'w')
-    text_file.write(str(ticket_data))
-    text_file.close()
+    # text_file = open('ANSWER/TICKET_DATA.txt', 'w')
+    # text_file.write(str(ticket_data))
+    # text_file.close()
     return ticket_data
 
 
@@ -2124,9 +2113,9 @@ async def reserve_order(order_id: str, name: str = "Name", phone: str = "+711122
                                           ReserveKind='',
                                           ChequeSettings=ChequeSettings(ChequeWidth=48,
                                                                         TaggedText=True))
-    text_file = open('ANSWER/RESERVE.txt', 'w')
-    text_file.write(str(reserve))
-    text_file.close()
+    # text_file = open('ANSWER/RESERVE.txt', 'w')
+    # text_file.write(str(reserve))
+    # text_file.close()
     return reserve
 
 
@@ -2175,14 +2164,41 @@ async def return_payment(return_order_id: str, terminal_id: int, terminal_sessio
     return return_payment
 
 
-if __name__ == "__main__":
-    # asyncio.run(add_tickets(order_id='00000022788', fare_name='Пассажирский', seat_num=0, parent_ticket_seat_num=0))
-    # asyncio.run(add_ticket_return(ticket_number='00000000278010',
-    #                               departure_id='80979b40-5d41-11ee-8668-d00d4cbcd401',
-    #                               order_id='',
-    #                               seat_num=1))
-    asyncio.run(return_payment(return_order_id='00000000128',
-                               terminal_id=0,
-                               terminal_session_id=0,
-                               payment_type='Other',
-                               amount='20'))
+# if __name__ == "__main__":
+# trips = asyncio.run(get_trips(departure='80979b40-5d41-11ee-8668-d00d4cbcd401',
+#                               destination='0c23e7a2-e5e8-11ee-94e0-d00d4cbcd401',
+#                               trips_date='2025-01-31'))
+# sale_session = asyncio.run(start_sale_session(trip_id='32c2a2d0-ae52-11ef-9db8-0a01e80df301',
+#                                               departure='80979b40-5d41-11ee-8668-d00d4cbcd401',
+#                                               destination='0c23e7a2-e5e8-11ee-94e0-d00d4cbcd401',
+#                                               order_id=''))
+# order_id = sale_session['Number']
+# seat_num = 3
+# result = asyncio.run(add_tickets(order_id=order_id,
+#                                  fare_name='Пассажирский',
+#                                  seat_num=seat_num,
+#                                  parent_ticket_seat_num=0))
+# number = result['TicketSeats']['Elements'][0]['TicketNumber']
+# ticket_data = asyncio.run(set_ticket_data(order_id=order_id,
+#                                     number=number,
+#                                     seat_num=seat_num,
+#                                     fare_name='Пассажирский',
+#                                     name='Иванов Иван Иванович',
+#                                     document_number='11 22 333333',
+#                                     document='Паспорт гражданина РФ',
+#                                     birthday='11-12-2000',
+#                                     gender='Мужской',
+#                                     citizenship='РОССИЯ'))
+# result = asyncio.run(add_tickets(order_id=order_id,
+#                            fare_name='Багажный',
+#                            seat_num=0,
+#                            parent_ticket_seat_num=seat_num))
+#     # asyncio.run(add_ticket_return(ticket_number='00000000278010',
+#     #                               departure_id='80979b40-5d41-11ee-8668-d00d4cbcd401',
+#     #                               order_id='',
+#     #                               seat_num=1))
+#     # asyncio.run(return_payment(return_order_id='00000000128',
+#     #                            terminal_id=0,
+#     #                            terminal_session_id=0,
+#     #                            payment_type='Other',
+#     #                            amount='20'))

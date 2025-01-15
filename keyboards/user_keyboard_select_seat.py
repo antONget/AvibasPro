@@ -153,6 +153,14 @@ def keyboards_seat(seats_scheme: list[dict] = None, seats_reserved: list[dict] =
     return kb_builder.as_markup()
 
 
+def keyboard_add_luggage() -> InlineKeyboardMarkup:
+    button_1 = InlineKeyboardButton(text='Добавить багаж 🧳', callback_data='add_luggage')
+    button_2 = InlineKeyboardButton(text='Удалить багаж ❌', callback_data='del_luggage')
+    button_3 = InlineKeyboardButton(text='Оформить билет 🎫', callback_data='confirm')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1, button_2], [button_3]])
+    return keyboard
+
+
 def keyboard_confirm() -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text='Оформить билет', callback_data='confirm')
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])

@@ -9,7 +9,7 @@ from aiogram.filters import StateFilter
 
 from keyboards.user_keyboard_order_ticket import keyboard_name, keyboard_pay_ticket, keyboard_gender, \
     keyboard_citizenship, keyboard_birthday, keyboard_passport, keyboard_citizenship_, keyboards_get_contact, \
-    keyboard_email, keyboard_payment
+    keyboard_email, keyboard_payment, keyboard_confirm_ticket_data
 from keyboards.user_keyboard_select_station import keyboard_main_button
 from services.zeep_soap import add_tickets, set_ticket_data, reserve_order, payment_ticket
 from services.payments import create_payment, check_payment
@@ -60,11 +60,78 @@ async def order_ticket(callback: CallbackQuery, state: FSMContext) -> None:
     if user.name == 'default':
         await callback.message.edit_text(text='Пришлите Ваше ФИО (например: Иванов Сергей Игоревич)',
                                          reply_markup=None)
+        await state.set_state(state=OrderTicket.data_personal)
     else:
-        await callback.message.edit_text(text='Пришлите Ваше ФИО (например: Иванов Сергей Игоревич)',
-                                         reply_markup=keyboard_name(name=user.name))
-    await state.set_state(state=OrderTicket.data_personal)
+        name = user.name
+        gender = user.gender
+        document_number = user.document_number
+        birthday = user.birthday
+        citizenship = user.citizenship
+        phone = user.phone
+        email = user.email
+
+        await callback.message.edit_text(text=f'Подтвердите или измените ранее введенные данные:\n'
+                                              f'<b>ФИО:</b> {name}\n'
+                                              f'<b>Пол:</b> {gender}\n'
+                                              f'<b>Номер документа:</b> {document_number}\n'
+                                              f'<b>Дата рождения:</b> {birthday}\n'
+                                              f'<b>Гражданство:</b> {citizenship}\n'
+                                              f'<b>Номер телефона:</b> {phone}\n'
+                                              f'<b>Email:</b> {email}\n',
+                                         reply_markup=keyboard_confirm_ticket_data())
     await callback.answer()
+
+
+@router.callback_query(F.data == 'ticket_data_confirm')
+@error_handler
+async def ticket_data_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Подтвержденные ранее введенных данных
+    :param callback:
+    :param state:
+    :param bot:
+    :return:
+    """
+    logging.info('ticket_data_confirm')
+    data = await state.get_data()
+    user: User = await get_user(tg_id=callback.from_user.id)
+    name = user.name
+    gender = user.gender
+    document_number = user.document_number
+    birthday = user.birthday
+    citizenship = user.citizenship
+    phone = user.phone
+    email = user.email
+    fare_name = 'Пассажирский'
+    document = 'Паспорт гражданина РФ'
+    ticket_data = await set_ticket_data(order_id=data['order_id'],
+                                        number=data['number'],
+                                        seat_num=data['seat_num'],
+                                        fare_name=fare_name,
+                                        name=name,
+                                        document_number=document_number,
+                                        document=document,
+                                        birthday=birthday,
+                                        gender=gender,
+                                        citizenship=citizenship)
+    await callback.message.edit_text(text='Данные успешно добавлены',
+                                     reply_markup=keyboard_pay_ticket())
+
+
+@router.callback_query(F.data == 'ticket_data_change')
+@error_handler
+async def ticket_data_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Правка ранее введенных данных
+    :param callback:
+    :param state:
+    :param bot:
+    :return:
+    """
+    logging.info('ticket_data_change')
+    user: User = await get_user(tg_id=callback.from_user.id)
+    await callback.message.edit_text(text='Пришлите Ваше ФИО (например: Иванов Сергей Игоревич)',
+                                     reply_markup=keyboard_name(name=user.name))
 
 
 @router.message(F.text, StateFilter(OrderTicket.data_personal))
@@ -350,7 +417,6 @@ async def get_ticket_data(state: FSMContext, message: Message):
     birthday = data['birthday']
     gender = data['gender']
     citizenship = data['citizenship']
-    # print(data)
     ticket_data = await set_ticket_data(order_id=order_id,
                                         number=number,
                                         seat_num=seat_num,
@@ -361,12 +427,6 @@ async def get_ticket_data(state: FSMContext, message: Message):
                                         birthday=birthday,
                                         gender=gender,
                                         citizenship=citizenship)
-    # data_tickets = {"fare_name": fare_name,
-    #                 "passenger_name": name,
-    #                 "departure": ticket_data['Departure']['Name'],
-    #                 "destination": ticket_data['Destination']['Name'],
-    #                 "amount": ticket_data['Amount']}
-    # await state.update_data(data_tickets=data_tickets)
     await message.answer(text='Данные успешно добавлены',
                          reply_markup=keyboard_pay_ticket())
 
@@ -379,23 +439,19 @@ async def pay_ticket(callback: CallbackQuery, state: FSMContext) -> None:
     reserve = await reserve_order(order_id=order_id)
     amount = reserve['Amount']
     await state.update_data(amount=amount)
-    # await callback.message.answer(text='Ссылка на оплату билета')
-    description = f'{data["fare_name"]}: {data["name"]}'
+    user: User = await get_user(tg_id=callback.from_user.id)
+    description = f'Автобусный билет: {user.name}'
     payment_url, payment_id = create_payment(amount=amount,
                                              description=description,
-                                             full_name=data['name'],
+                                             full_name=user.name,
                                              user_tg_id=callback.from_user.id,
                                              message_order_id=callback.message.message_id,
-                                             email=data['email'],
-                                             phone=data['phone'])
+                                             email=user.email,
+                                             phone=user.phone)
     await callback.message.edit_text(text=f'Оплатите билет, после оплаты нажмите на кнопку «Получить билет» ⬇️',
                                      reply_markup=keyboard_payment(payment_url=payment_url,
                                                                    payment_id=payment_id,
                                                                    amount=amount))
-    # await callback.message.edit_text(text=f'Оплатите билет, после оплаты нажмите на кнопку «Получить билет» ⬇️',
-    #                                  reply_markup=keyboard_payment(payment_url='https://ya.ru',
-    #                                                                payment_id=0,
-    #                                                                amount=amount))
     ticket_departure_time = reserve["Tickets"][0]["DepartureTime"]
     departure_time = str(ticket_departure_time.strftime("%H:%M"))
     departure_data = str(ticket_departure_time.strftime("%d.%m.%Y"))
