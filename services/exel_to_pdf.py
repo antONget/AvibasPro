@@ -7,7 +7,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib import colors
 
 # Регистрируем шрифты, поддерживающие кириллицу
-pdfmetrics.registerFont(TTFont("Arial", "arial.ttf"))  # Обычный Arial
+pdfmetrics.registerFont(TTFont("Arial", "arial(1).ttf"))  # Обычный Arial
 pdfmetrics.registerFont(TTFont("Arial-Bold", "Arial.ttf"))  # Жирный Arial
 
 
