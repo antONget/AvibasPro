@@ -132,6 +132,7 @@ async def ticket_data_confirm(callback: CallbackQuery, state: FSMContext, bot: B
     user: User = await get_user(tg_id=callback.from_user.id)
     await callback.message.edit_text(text='Пришлите Ваше ФИО (например: Иванов Сергей Игоревич)',
                                      reply_markup=keyboard_name(name=user.name))
+    await state.set_state(OrderTicket.data_personal)
 
 
 @router.message(F.text, StateFilter(OrderTicket.data_personal))
@@ -235,18 +236,21 @@ async def get_data_passport(callback: CallbackQuery, state: FSMContext, bot: Bot
 @router.message(F.text, StateFilter(OrderTicket.data_passport))
 async def get_data_pasport(message: Message, state: FSMContext, bot: Bot):
     """
-    Получаем паспортнве данные от пользователя
+    Получаем паспортные данные от пользователя
     :param message:
     :param state:
     :param bot:
     :return:
     """
     logging.info('get_data_pasport')
-    name_pattern = re.compile(r'\b[0-9]{2}\s?[0-9]{2}\s?[0-9]{6}\b')
+    name_pattern = re.compile(r'\b[0-9]{2}\s{1}[0-9]{2}\s{1}[0-9]{6}\b')
     if name_pattern.match(message.text):
-        await bot.delete_message(chat_id=message.chat.id,
-                                 message_id=message.message_id - 1)
-        await message.delete()
+        try:
+            await bot.delete_message(chat_id=message.chat.id,
+                                     message_id=message.message_id - 1)
+            await message.delete()
+        except:
+            pass
         await state.update_data(document_number=message.text)
         await update_user(tg_id=message.from_user.id,
                           attribute=UserAttribute.document_number,
