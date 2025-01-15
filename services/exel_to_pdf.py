@@ -5,12 +5,34 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib import colors
-import reportlab
-
 
 # Регистрируем шрифты, поддерживающие кириллицу
-pdfmetrics.registerFont(TTFont("Arial", "arial(1).ttf"))  # Обычный Arial
+pdfmetrics.registerFont(TTFont("Arial", "arial.ttf"))  # Обычный Arial
 pdfmetrics.registerFont(TTFont("Arial-Bold", "Arial.ttf"))  # Жирный Arial
+
+
+def draw_dashed_vertical_line(c, x, y_start, y_end, dash_length=5, gap_length=3, line_width=1, color=colors.black):
+    """
+    Рисует вертикальную прерывистую линию на PDF.
+
+    :param c: Canvas объекта PDF
+    :param x: X-координата линии
+    :param y_start: Начальная Y-координата линии
+    :param y_end: Конечная Y-координата линии
+    :param dash_length: Длина каждого штриха
+    :param gap_length: Длина промежутка между штрихами
+    :param line_width: Толщина линии
+    :param color: Цвет линии
+    """
+    # Настройка цвета и толщины линии
+    c.setStrokeColor(color)
+    c.setLineWidth(line_width)
+
+    # Рисование пунктирной линии
+    y = y_start
+    while y > y_end:
+        c.line(x, y, x, max(y - dash_length, y_end))
+        y -= dash_length + gap_length
 
 
 def wrap_text(c, text, x, y, max_width, font_name, font_size, line_height):
@@ -59,12 +81,12 @@ def excel_to_pdf(input_file, output_file):
     # Начальные координаты
     left_y_position = height - 40  # Начальная высота для левой части
     right_y_position = height - 40  # Начальная высота для правой части
-    line_height = 16  # Стандартная высота строки для переноса текста
+    line_height = 12  # Стандартная высота строки для переноса текста
 
     # Координаты для левого и правого текста
     left_start_x = 40  # Левый текст
     right_start_x = width - 300  # Правый текст (задается фиксированным отступом от правого края)
-
+    y = []
     for row in sheet.iter_rows():
         left_x_position = left_start_x  # Текущая координата X для левого текста
         right_x_position = right_start_x  # Текущая координата X для правого текста
@@ -101,7 +123,8 @@ def excel_to_pdf(input_file, output_file):
                 # Обычная ширина столбца
                 column_width = sheet.column_dimensions[
                                    column_letter].width * 5 if column_letter in sheet.column_dimensions else 70
-
+            if left_x_position + column_width > 300 and column_letter in ['A', 'B', 'C']:
+                column_width = 300 - left_x_position
             # Устанавливаем шрифт
             if cell.font.bold:
                 font_name = "Arial-Bold"
@@ -129,10 +152,15 @@ def excel_to_pdf(input_file, output_file):
                     left_y_position = min(left_y_position, new_y_position)  # Обновляем Y координату
                     left_x_position += column_width
                 elif column_letter in ['D', 'E', 'F', 'G', 'H']:  # Столбцы справа
+                    if "●" in cell_text:
+                        y.append(right_y_position)
+                    if "▼" in cell_text:
+                        right_x_position -=2
+                        y.append(right_y_position)
                     if "Место" in cell_text:
                         text_width = c.stringWidth(cell_text, font_name, font_size)
                         # Проверяем, помещается ли текст в пределах max_x
-                        max_x = 480
+                        max_x = 560
                         if right_x_position + text_width > max_x:
                             # Если не помещается, сдвигаем текст влево
                             right_x_position = max_x - text_width
@@ -142,6 +170,7 @@ def excel_to_pdf(input_file, output_file):
                         )
                         right_y_position = min(right_y_position, new_y_position)  # Обновляем Y координату
                         right_x_position += column_width
+
                     elif ' ' in cell_text:
                         right_has_text = True
                         lines = cell_text.split("\n")
@@ -181,11 +210,14 @@ def excel_to_pdf(input_file, output_file):
             c.showPage()
             left_y_position = right_y_position = height - 40  # Возвращаемся на верх страницы
 
+    x = 315  # X-координата
+    y_start = y[0] - 10  # Верхняя точка линии
+    y_end = y[1] - 10  # Нижняя точка линии
 
-
+    draw_dashed_vertical_line(c, x = x, y_start = y_start, y_end = y_end)
     # Сохраняем PDF
     c.save()
 
 
-# # Пример использования
-# excel_to_pdf("111.xlsx", "output.pdf")
+# Пример использования
+# excel_to_pdf("843554518.xlsx", "output.pdf")
