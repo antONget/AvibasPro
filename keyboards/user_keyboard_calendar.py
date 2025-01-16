@@ -22,4 +22,8 @@ def keyboards_trip(list_routers: list):
             text=text,
             callback_data=callback))
     kb_builder.row(*buttons, width=1)
+    back = [InlineKeyboardButton(
+        text='Назад',
+        callback_data='back_dialog_calendar')]
+    kb_builder.row(*back, width=1)
     return kb_builder.as_markup()

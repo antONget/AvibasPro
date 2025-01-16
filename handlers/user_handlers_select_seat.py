@@ -2,8 +2,8 @@ from aiogram import Router, F, Bot
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from keyboards.user_keyboard_select_seat import keyboards_seat, keyboard_confirm, keyboard_add_luggage
-from services.zeep_soap import get_trips_segment, get_occupied_seats, start_sale_session
+from keyboards.user_keyboard_select_seat import keyboards_seat, keyboard_confirm
+from services.zeep_soap import get_trips_segment, get_occupied_seats, start_sale_session, get_bus_stops
 from config_data.config import Config, load_config
 from utils.error_handling import error_handler
 import logging
@@ -14,7 +14,7 @@ config: Config = load_config()
 
 @router.callback_query(F.data.startswith('router_'))
 @error_handler
-async def select_num_router(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
+async def select_num_router(callback: CallbackQuery, state: FSMContext, bot: Bot, press_button_back: bool = False) -> None:
     """
     Выбор свободного места на выбранный рейс
     :param callback: router_{rout[0]}
@@ -24,8 +24,11 @@ async def select_num_router(callback: CallbackQuery, state: FSMContext, bot: Bot
     :return:
     """
     logging.info(f'select_num_router')
-    trip_id = callback.data.split('_')[-1]
     data = await state.get_data()
+    if press_button_back:
+        trip_id = data['trip_id']
+    else:
+        trip_id = callback.data.split('_')[-1]
     occupied_seats = await get_occupied_seats(trip_id=trip_id,
                                               departure=data['departure'],
                                               destination=data['destination'],
@@ -106,19 +109,13 @@ async def select_seat_num(callback: CallbackQuery, state: FSMContext, bot: Bot):
         data = await state.get_data()
         data_trip = data['data_trip']
         departure_time = data['departure_time']
-        print('trip_id', data['trip_id'], 'departure', data['departure'], 'destination', data['destination'], 'order_id', '')
+        # print('trip_id', data['trip_id'], 'departure', data['departure'], 'destination', data['destination'], 'order_id', '')
         sale_session = await start_sale_session(trip_id=data['trip_id'],
                                                 departure=data['departure'],
                                                 destination=data['destination'],
                                                 order_id='')
         await state.update_data(order_id=sale_session['Number'])
-        # await callback.message.edit_text(text=f'Проверьте данные о маршруте:\n\n'
-        #                                       f'<i>Отправление:</i> {sale_session["Departure"]["Name"]}\n'
-        #                                       f'<i>Прибытие:</i> {sale_session["Destination"]["Name"]}\n'
-        #                                       f'<i>Дата:</i> {data_trip}\n'
-        #                                       f'<i>Время:</i> {departure_time.strftime("%H:%M")}\n'
-        #                                       f'<i>Место:</i> {seat_num}\n',
-        #                                  reply_markup=keyboard_confirm())
+
         await callback.message.edit_text(text=f'Проверьте данные о маршруте:\n\n'
                                               f'<i>Отправление:</i> {sale_session["Departure"]["Name"]}\n'
                                               f'<i>Прибытие:</i> {sale_session["Destination"]["Name"]}\n'
@@ -127,3 +124,38 @@ async def select_seat_num(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                               f'<i>Место:</i> {seat_num}\n',
                                          reply_markup=keyboard_confirm())
         await callback.answer()
+
+
+@router.callback_query(F.data == 'back_dialog_confirm')
+@error_handler
+async def back_dialog_seat(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    logging.info('back_dialog_confirm')
+    await select_num_router(callback=callback, state=state, bot=bot, press_button_back=True)
+
+
+# @router.callback_query(F.data == 'back_dialog_data')
+# @error_handler
+# async def back_dialog_data(callback: CallbackQuery, state: FSMContext, bot: Bot):
+#     logging.info('back_dialog_data')
+#     data = await state.get_data()
+#     bus_stops = await get_bus_stops()
+#     name_departure = ''
+#     name_destination = ''
+#     for bus_stop in bus_stops:
+#         if bus_stop['Id'] == data['departure']:
+#             name_departure = bus_stop['Name']
+#         if bus_stop['Id'] == data['destination']:
+#             name_destination = bus_stop['Name']
+#     await callback.message.edit_text(text=f'Проверьте данные о маршруте:\n\n'
+#                                           f'<i>Отправление:</i> {name_departure}\n'
+#                                           f'<i>Прибытие:</i> {name_destination}\n'
+#                                           f'<i>Дата:</i> {data["data_trip"]}\n'
+#                                           f'<i>Время:</i> {data["departure_time"].strftime("%H:%M")}\n'
+#                                           f'<i>Место:</i> {data["seat_num"]}\n',
+#                                      reply_markup=keyboard_confirm())
+
+
+# @router.callback_query(F.data == 'back_dialog_personal_1')
+# @error_handler
+# async def back_dialog_data(callback: CallbackQuery, state: FSMContext, bot: Bot):
+#     logging.info('back_dialog_data')

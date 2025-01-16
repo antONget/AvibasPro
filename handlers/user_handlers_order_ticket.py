@@ -10,7 +10,7 @@ from aiogram.filters import StateFilter
 from keyboards.user_keyboard_order_ticket import keyboard_name, keyboard_pay_ticket, keyboard_gender, \
     keyboard_citizenship, keyboard_birthday, keyboard_passport, keyboard_citizenship_, keyboards_get_contact, \
     keyboard_email, keyboard_payment, keyboard_confirm_ticket_data
-from keyboards.user_keyboard_select_station import keyboard_main_button
+from keyboards.user_keyboard_select_station import keyboard_main_button, keyboard_major_button
 from services.zeep_soap import add_tickets, set_ticket_data, reserve_order, payment_ticket
 from services.payments import create_payment, check_payment
 from services.smtp_email import send_email
@@ -33,6 +33,7 @@ class OrderTicket(StatesGroup):
     data_personal = State()
     data_passport = State()
     data_birthday = State()
+    gender = State()
     citizenship = State()
     email = State()
     phone = State()
@@ -40,7 +41,7 @@ class OrderTicket(StatesGroup):
 
 @router.callback_query(F.data == 'confirm')
 @error_handler
-async def order_ticket(callback: CallbackQuery, state: FSMContext) -> None:
+async def order_ticket(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     """
     Оформление билета
     :param callback:
@@ -58,9 +59,9 @@ async def order_ticket(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(number=result['TicketSeats']['Elements'][0]['TicketNumber'])
     user: User = await get_user(tg_id=callback.from_user.id)
     if user.name == 'default':
+        await state.set_state(state=OrderTicket.data_personal)
         await callback.message.edit_text(text='Пришлите Ваше ФИО (например: Иванов Сергей Игоревич)',
                                          reply_markup=None)
-        await state.set_state(state=OrderTicket.data_personal)
     else:
         name = user.name
         gender = user.gender
@@ -147,6 +148,7 @@ async def get_data_personal(message: Message, state: FSMContext, bot: Bot):
     logging.info('get_data_personal')
     name_pattern = re.compile(r'^[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+$')
     if name_pattern.match(message.text):
+        await state.set_state(OrderTicket.gender)
         await bot.delete_message(chat_id=message.chat.id,
                                  message_id=message.message_id-1)
         await message.delete()
@@ -175,6 +177,7 @@ async def get_data_personal(callback: CallbackQuery, state: FSMContext, bot: Bot
     logging.info('get_data_personal')
     name = callback.data.split('_', maxsplit=1)[-1]
     await state.update_data(name=name)
+    await state.set_state(OrderTicket.gender)
     await callback.message.edit_text(text='Укажите ваш пол',
                                      reply_markup=keyboard_gender())
 
@@ -368,16 +371,16 @@ async def get_phone_user(message: Message, state: FSMContext, bot: Bot) -> None:
     user: User = await get_user(tg_id=message.from_user.id)
     if user.email == 'default':
         await message.answer(text="Укажите ваш email для отправки билета",
-                             reply_markup=keyboard_main_button())
+                             reply_markup=keyboard_major_button())
     else:
         msg = await message.answer('---',
-                                   reply_markup=keyboard_main_button())
+                                   reply_markup=keyboard_major_button())
         await message.answer(text="Укажите ваш email для отправки билета",
                              reply_markup=keyboard_email(email=user.email))
     await state.set_state(state=OrderTicket.email)
 
 
-@router.callback_query(F.data.startswith('email_'))
+@router.callback_query(F.data.startswith('email#'))
 async def get_email(callback: CallbackQuery, state: FSMContext) -> None:
     logging.info(f'get_email')
     await callback.message.delete()
@@ -481,13 +484,16 @@ async def pay_ticket(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data.startswith('payment_'))
-async def get_ticket(callback: CallbackQuery, state: FSMContext) -> None:
+async def get_ticket(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     logging.info(f'get_ticket')
     payment_id = callback.data.split('_')[1]
     result = check_payment(payment_id=payment_id)
     # result = 'succeeded'
     if result == 'succeeded':
         await callback.message.delete()
+        await callback.message.answer(text='Идет подготовка билета. Ожидайте ⏳...')
+        await bot.send_chat_action(chat_id=callback.from_user.id,
+                                   action="typing")
         data = await state.get_data()
         order_id = data['order_id']
         amount = data['amount']
@@ -561,4 +567,71 @@ async def get_ticket(callback: CallbackQuery, state: FSMContext) -> None:
     else:
         await callback.message.answer(text='Платеж не подтвержден, если вы совершили платеж, то попробуйте запросить'
                                            ' билет немного позднее')
+    await callback.answer()
+
+
+@router.callback_query(F.data == 'back_dialog_personal')
+@error_handler
+async def back_dialog(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    logging.info('back_dialog')
+    current_state = (await state.get_state()).split(':')[-1]
+    # data_passport = State()
+    # data_birthday = State()
+    # citizenship = State()
+    # email = State()
+    # phone = State()
+    if current_state == 'data_personal':
+        user: User = await get_user(tg_id=callback.from_user.id)
+        await state.set_state(state=OrderTicket.data_personal)
+        if user.name == 'default':
+            await callback.message.edit_text(text='Пришлите Ваше ФИО (например: Иванов Сергей Игоревич)',
+                                             reply_markup=None)
+        else:
+            name = user.name
+            gender = user.gender
+            document_number = user.document_number
+            birthday = user.birthday
+            citizenship = user.citizenship
+            phone = user.phone
+            email = user.email
+
+            await callback.message.edit_text(text=f'Подтвердите или измените ранее введенные данные:\n'
+                                                  f'<b>ФИО:</b> {name}\n'
+                                                  f'<b>Пол:</b> {gender}\n'
+                                                  f'<b>Номер документа:</b> {document_number}\n'
+                                                  f'<b>Дата рождения:</b> {birthday}\n'
+                                                  f'<b>Гражданство:</b> {citizenship}\n'
+                                                  f'<b>Номер телефона:</b> {phone}\n'
+                                                  f'<b>Email:</b> {email}\n',
+                                             reply_markup=keyboard_confirm_ticket_data())
+    elif current_state == 'gender':
+        user: User = await get_user(tg_id=callback.from_user.id)
+        await callback.message.edit_text(text='Пришлите Ваше ФИО (например: Иванов Сергей Игоревич)',
+                                         reply_markup=keyboard_name(name=user.name))
+        await state.set_state(OrderTicket.data_personal)
+    elif current_state == 'data_passport':
+        await callback.message.edit_text(text='Укажите ваш пол',
+                                         reply_markup=keyboard_gender())
+    elif current_state == 'data_birthday':
+        user: User = await get_user(tg_id=callback.from_user.id)
+        if user.document_number == 'default':
+            await callback.message.edit_text(text='Пришлите паспортные данные (например: 12 34 123456',
+                                             reply_markup=None)
+        else:
+            await callback.message.edit_text(text='Пришлите паспортные данные (например: 12 34 123456',
+                                             reply_markup=keyboard_passport(passport=user.document_number))
+        await state.set_state(OrderTicket.data_passport)
+    elif current_state == 'citizenship':
+        user: User = await get_user(tg_id=callback.from_user.id)
+        if user.birthday == 'default':
+            await callback.message.edit_text(text='Укажите дату вашего рождения, в формате: дд-мм-гггг')
+        else:
+            await callback.message.edit_text(text='Укажите дату вашего рождения, в формате: дд-мм-гггг',
+                                             reply_markup=keyboard_birthday(birthday=user.birthday))
+        await state.set_state(OrderTicket.data_birthday)
+    elif current_state == 'email':
+        await callback.message.delete()
+        await callback.message.answer(text="Укажите ваш номер телефона или нажмите внизу 👇 Отправить свой контакт ☎️",
+                                      reply_markup=keyboards_get_contact())
+        await state.set_state(OrderTicket.phone)
     await callback.answer()

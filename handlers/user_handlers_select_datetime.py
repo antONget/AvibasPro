@@ -2,6 +2,7 @@ from aiogram import Router, F, Bot
 from aiogram.types import CallbackQuery
 from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup,State
 
 
 from keyboards.user_keyboard_calendar import keyboards_trip
@@ -18,17 +19,22 @@ config: Config = load_config()
 
 @router.callback_query(F.data.startswith('select_finish_station_'))
 @error_handler
-async def set_calendar(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
+async def set_calendar(callback: CallbackQuery, state: FSMContext, bot: Bot, press_button_back: bool = False) -> None:
     """
     Выводим календарь для выбора даты поездки
     :param callback: select_finish_station_{station[-1]}
     station[-1] - Id автобусной остановки
     :param state:
     :param bot:
+    :param press_button_back:
     :return:
     """
     logging.info(f'set_calendar')
-    await state.update_data(destination=callback.data.split('_')[-1])
+    if press_button_back:
+        data = await state.get_data()
+        destination = data["destination"]
+    else:
+        await state.update_data(destination=callback.data.split('_')[-1])
     calendar = aiogram_calendar.SimpleCalendar(show_alerts=True)
     calendar.set_dates_range(datetime(2015, 1, 1), datetime(2050, 12, 31))
     # получаем текущую дату
@@ -83,12 +89,12 @@ async def process_simple_calendar_start(callback: CallbackQuery, callback_data: 
         trips: dict = await get_trips(departure=data['departure'],
                                       destination=data['destination'],
                                       trips_date=data_trip)
-        print(data['departure'], data['destination'], data_trip)
+        # print(data['departure'], data['destination'], data_trip)
         list_router = []
         for rout in trips['Elements']:
             if rout['DepartureTime'] > current_data:
                 list_router.append([rout['Id'], rout['RouteNum'], rout['DepartureTime']])
-                print(rout['Id'], rout['RouteNum'], rout['DepartureTime'])
+                # print(rout['Id'], rout['RouteNum'], rout['DepartureTime'])
         if list_router:
             await callback.message.edit_text(text='Выберите <b>РЕЙС</b>',
                                              reply_markup=keyboards_trip(list_routers=list_router))
@@ -108,3 +114,30 @@ async def process_simple_calendar_start(callback: CallbackQuery, callback_data: 
             )
             return
     await callback.answer()
+
+
+@router.callback_query(F.data == 'back_dialog_calendar')
+@error_handler
+async def back_dialog(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    logging.info('back_dialog')
+    await set_calendar(callback=callback, state=state, bot=bot, press_button_back=True)
+
+
+@router.callback_query(F.data == 'back_dialog_seat')
+@error_handler
+async def back_dialog_seat(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    logging.info('back_dialog_seat')
+    current_data = datetime.now()
+    data = await state.get_data()
+    trips: dict = await get_trips(departure=data['departure'],
+                                  destination=data['destination'],
+                                  trips_date=data['data_trip'])
+    # print(data['departure'], data['destination'], data_trip)
+    list_router = []
+    for rout in trips['Elements']:
+        if rout['DepartureTime'] > current_data:
+            list_router.append([rout['Id'], rout['RouteNum'], rout['DepartureTime']])
+            # print(rout['Id'], rout['RouteNum'], rout['DepartureTime'])
+    if list_router:
+        await callback.message.edit_text(text='Выберите <b>РЕЙС</b>',
+                                         reply_markup=keyboards_trip(list_routers=list_router))

@@ -2,7 +2,7 @@ import asyncio
 import random
 
 from aiogram import Router, Bot, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import CommandStart, StateFilter, or_f
@@ -19,14 +19,13 @@ router.message.filter(F.chat.type == "private")
 
 
 # Определение состояний
-class User(StatesGroup):
-    description = State()
-    photo = State()
-    info = State()
-    cost = State()
+class ButtonBack(StatesGroup):
+    back_departure = State()
+    back_destination = State()
 
 
 @router.message(CommandStart())
+@router.message(F.text == '🏠 Главное меню')
 @error_handler
 async def process_press_start(message: Message, state: FSMContext, bot: Bot) -> None:
     """
@@ -61,6 +60,8 @@ async def press_button_pay_ticket(message: Message, bot: Bot, state: FSMContext)
     :return:
     """
     logging.info('press_button_pay_ticket')
+    await message.answer(text='В этом разделе вы можете выбрать направление, рейс и дату поездки, оформить билет',
+                         reply_markup=kb.keyboard_major_button())
     await message.answer(text='Выберите пункт отправления',
                          reply_markup=kb.keyboards_select_start_station())
 
@@ -76,6 +77,7 @@ async def select_start_station_other(callback: CallbackQuery, state: FSMContext,
     :return:
     """
     logging.info('select_start_station_other')
+    await state.set_state(ButtonBack.back_departure)
     dict_get_bus_stops: list[dict] = await get_bus_stops()
     await callback.message.edit_text(text='Выберите с какой буквы(букв) начинается название <b>ПУНКТА ОТПРАВЛЕНИЯ</b>',
                                      reply_markup=
@@ -110,7 +112,7 @@ async def select_start_station_first_letter(callback: CallbackQuery, state: FSMC
 
 @router.callback_query(F.data.startswith('select_start_station_'))
 @error_handler
-async def select_finish_station(callback: CallbackQuery, state: FSMContext, bot: Bot):
+async def select_finish_station(callback: CallbackQuery, state: FSMContext, bot: Bot, press_button_back: bool = False):
     """
     Выбор станции отправления по названию.
     :param callback: select_start_station_{station[-1]}
@@ -120,8 +122,13 @@ async def select_finish_station(callback: CallbackQuery, state: FSMContext, bot:
     :return:
     """
     logging.info('select_finish_station')
-    departure: str = callback.data.split('_')[-1]
-    await state.update_data(departure=departure)
+    await state.set_state(ButtonBack.back_departure)
+    if press_button_back:
+        data = await state.get_data()
+        departure = data["departure"]
+    else:
+        departure: str = callback.data.split('_')[-1]
+        await state.update_data(departure=departure)
     dict_get_bus_stops: list[dict] = await get_destinations(departure=departure)
     await callback.message.edit_text(text='Выберите с какой буквы(букв) начинается название <b>ПУНКТА НАЗНАЧЕНИЯ</b>',
                                      reply_markup=
@@ -143,6 +150,7 @@ async def select_finish_station_letter(callback: CallbackQuery, state: FSMContex
     :return:
     """
     logging.info('select_finish_station_letter')
+    await state.set_state(ButtonBack.back_destination)
     data: dict = await state.get_data()
     dict_get_bus_stops: list[dict] = await get_destinations(departure=data['departure'])
     count_letter: int = int(callback.data.split('_')[-2]) + 1
@@ -153,3 +161,15 @@ async def select_finish_station_letter(callback: CallbackQuery, state: FSMContex
                                                                                    count_letter=count_letter,
                                                                                    letter=first_letter))
     await callback.answer()
+
+
+@router.callback_query(F.data == 'back_dialog')
+@error_handler
+async def back_dialog(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    logging.info('back_dialog')
+    current_state = (await state.get_state()).split(':')[-1]
+    if current_state == 'back_departure':
+        await callback.message.edit_text(text='Выберите пункт отправления',
+                                         reply_markup=kb.keyboards_select_start_station())
+    elif current_state == 'back_destination':
+        await select_finish_station(callback=callback, state=state, bot=bot, press_button_back=True)

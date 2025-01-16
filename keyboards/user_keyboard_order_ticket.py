@@ -13,45 +13,52 @@ def keyboard_confirm_ticket_data() -> InlineKeyboardMarkup:
 
 def keyboard_name(name: str) -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text=f'{name}', callback_data=f'name_{name}')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
+    button_2 = InlineKeyboardButton(text=f'Назад', callback_data=f'back_dialog_personal')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
     return keyboard
 
 
 def keyboard_birthday(birthday: str) -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text=f'{birthday}', callback_data=f'birthday_{birthday}')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
+    button_2 = InlineKeyboardButton(text=f'Назад', callback_data=f'back_dialog_personal')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
     return keyboard
 
 
 def keyboard_passport(passport: str) -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text=f'{passport}', callback_data=f'passport_{passport}')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
+    button_2 = InlineKeyboardButton(text=f'Назад', callback_data=f'back_dialog_personal')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
     return keyboard
 
 
 def keyboard_gender() -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text='Мужской 👦', callback_data='gender_male')
     button_2 = InlineKeyboardButton(text='Женский 👩', callback_data='gender_female')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
+    button_3 = InlineKeyboardButton(text=f'Назад', callback_data=f'back_dialog_personal')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2], [button_3]])
     return keyboard
 
 
 def keyboard_citizenship() -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text='РОССИЯ', callback_data='citizenship_РОССИЯ')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
+    button_2 = InlineKeyboardButton(text=f'Назад', callback_data=f'back_dialog_personal')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
     return keyboard
 
 
 def keyboard_citizenship_(citizenship: str) -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text='РОССИЯ', callback_data='citizenship_РОССИЯ')
     button_2 = InlineKeyboardButton(text=f'{citizenship}', callback_data=f'citizenship_{citizenship}')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
+    button_3 = InlineKeyboardButton(text=f'Назад', callback_data=f'back_dialog_personal_1')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2], [button_3]])
     return keyboard
 
 
 def keyboard_email(email: str) -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text=f'{email}', callback_data=f'email#{email}')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
+    button_2 = InlineKeyboardButton(text=f'Назад', callback_data=f'back_dialog_personal')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
     return keyboard
 
 

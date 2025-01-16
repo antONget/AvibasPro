@@ -4,40 +4,25 @@ from datetime import time, timedelta, datetime
 import logging
 
 
-def keyboards_trip(list_routers: list):
-    """
-    Клавиатура для вывода рейсов
-    :param list_routers:
-    :return:
-    """
-    logging.info(f"keyboards_trip")
-    # [rout['Id'], rout['RouteNum'], rout['DepartureTime']
-    kb_builder = InlineKeyboardBuilder()
-    buttons = []
-    for rout in list_routers:
-        data_trip = rout[2].strftime("%H:%M")
-        text = f'№ {rout[1]} - {data_trip}'
-        callback = f'router_{rout[0]}'
-        buttons.append(InlineKeyboardButton(
-            text=text,
-            callback_data=callback))
-    kb_builder.row(*buttons, width=1)
-    return kb_builder.as_markup()
-
-
-seats_scheme_default = [[1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 0, 1, 1],
-                        [1, 1, 1, 1, 1]]
+# def keyboards_trip(list_routers: list):
+#     """
+#     Клавиатура для вывода рейсов
+#     :param list_routers:
+#     :return:
+#     """
+#     logging.info(f"keyboards_trip")
+#     # [rout['Id'], rout['RouteNum'], rout['DepartureTime']
+#     kb_builder = InlineKeyboardBuilder()
+#     buttons = []
+#     for rout in list_routers:
+#         data_trip = rout[2].strftime("%H:%M")
+#         text = f'№ {rout[1]} - {data_trip}'
+#         callback = f'router_{rout[0]}'
+#         buttons.append(InlineKeyboardButton(
+#             text=text,
+#             callback_data=callback))
+#     kb_builder.row(*buttons, width=1)
+#     return kb_builder.as_markup()
 
 
 def keyboards_seat(seats_scheme: list[dict] = None, seats_reserved: list[dict] = None, show_row: int = 4, block: int = 0):
@@ -69,7 +54,7 @@ def keyboards_seat(seats_scheme: list[dict] = None, seats_reserved: list[dict] =
     logging.info(f"keyboards_seat")
     seats_scheme_ = []
     if not seats_scheme:
-        seats_scheme_ = seats_scheme_default
+        seats_scheme_ = 'seats_scheme_default'
     else:
         i = 1  # инициализация счетчика рядов в схеме посадки
         row = []  # список возможности приобрести билет на место в ряду
@@ -150,24 +135,29 @@ def keyboards_seat(seats_scheme: list[dict] = None, seats_reserved: list[dict] =
             callback = f'select_count_block_{i+1}'
             seat_block.append(InlineKeyboardButton(text=text, callback_data=callback))
     kb_builder.row(*seat_block, width=2)
+    back = [InlineKeyboardButton(
+        text='Назад',
+        callback_data='back_dialog_seat')]
+    kb_builder.row(*back, width=1)
     return kb_builder.as_markup()
 
 
-def keyboard_add_luggage() -> InlineKeyboardMarkup:
-    button_1 = InlineKeyboardButton(text='Добавить багаж 🧳', callback_data='add_luggage')
-    button_2 = InlineKeyboardButton(text='Удалить багаж ❌', callback_data='del_luggage')
-    button_3 = InlineKeyboardButton(text='Оформить билет 🎫', callback_data='confirm')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1, button_2], [button_3]])
-    return keyboard
+# def keyboard_add_luggage() -> InlineKeyboardMarkup:
+#     button_1 = InlineKeyboardButton(text='Добавить багаж 🧳', callback_data='add_luggage')
+#     button_2 = InlineKeyboardButton(text='Удалить багаж ❌', callback_data='del_luggage')
+#     button_3 = InlineKeyboardButton(text='Оформить билет 🎫', callback_data='confirm')
+#     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1, button_2], [button_3]])
+#     return keyboard
 
 
 def keyboard_confirm() -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text='Оформить билет', callback_data='confirm')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
+    button_2 = InlineKeyboardButton(text='Назад', callback_data='back_dialog_confirm')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
     return keyboard
 
 
-def keyboard_pay_ticket() -> InlineKeyboardMarkup:
-    button_1 = InlineKeyboardButton(text='Купить билет', callback_data='pay_ticket')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
-    return keyboard
+# def keyboard_pay_ticket() -> InlineKeyboardMarkup:
+#     button_1 = InlineKeyboardButton(text='Купить билет', callback_data='pay_ticket')
+#     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1]])
+#     return keyboard

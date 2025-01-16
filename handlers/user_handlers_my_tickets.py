@@ -1,9 +1,10 @@
 from aiogram import Router, F, Bot
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 import aiogram_calendar
 
 from keyboards.user_keyboard_my_tickets import keyboards_my_tickets, keyboard_action_my_ticket
+from keyboards.user_keyboard_select_station import keyboard_major_button
 from database.requests import get_tickets_user, get_ticket_user_id_order, update_ticket, StatusTicket, \
     update_cancellation_details
 from database.models import Tiket
@@ -24,6 +25,8 @@ config: Config = load_config()
 async def press_button_my_tickets(message: Message, state: FSMContext, bot: Bot) -> None:
     logging.info('press_button_my_tickets')
     tickets: list[Tiket] = await get_tickets_user(tg_id=message.from_user.id)
+    await message.answer(text='В этом разделе вы можете повторить и вернуть заказ',
+                         reply_markup=keyboard_major_button())
     await message.answer(text=f'Выберите билет, который вы бы хотели вернуть или повторить заказ. '
                               f' 🔄 Разверните экран телефона для отображения полной информации',
                          reply_markup=keyboards_my_tickets(list_my_tickets=tickets))

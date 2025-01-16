@@ -12,6 +12,14 @@ def keyboard_main_button() -> ReplyKeyboardMarkup:
     return keyboard
 
 
+def keyboard_major_button() -> ReplyKeyboardMarkup:
+    logging.info('keyboard_major_button')
+    button_1 = KeyboardButton(text='🏠 Главное меню')
+    keyboard = ReplyKeyboardMarkup(keyboard=[[button_1]],
+                                   resize_keyboard=True)
+    return keyboard
+
+
 def keyboards_select_start_station() -> InlineKeyboardMarkup:
     logging.info(f"keyboards_select_start_station")
     kb_builder = InlineKeyboardBuilder()
@@ -72,6 +80,10 @@ def keyboards_select_first_word_station(dict_get_bus_stops: list[dict], count_le
                 text=text,
                 callback_data=callback))
         kb_builder.row(*buttons, width=3)
+    back = [InlineKeyboardButton(
+        text='Назад',
+        callback_data='back_dialog')]
+    kb_builder.row(*back, width=1)
     return kb_builder.as_markup()
 
 
@@ -135,4 +147,8 @@ def keyboards_select_first_word_station_finish(dict_get_bus_stops: list[dict], c
                 text=text,
                 callback_data=callback))
         kb_builder.row(*buttons, width=3)
+    back = [InlineKeyboardButton(
+        text='Назад',
+        callback_data='back_dialog')]
+    kb_builder.row(*back, width=1)
     return kb_builder.as_markup()
