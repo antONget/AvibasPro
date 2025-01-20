@@ -10,6 +10,8 @@ class TgBot:
     redis_url: str
     yookassa_id: int
     yookassa_key: str
+    username_avibus: str
+    password_avibus: str
 
 
 @dataclass
@@ -25,4 +27,6 @@ def load_config(path: str = None) -> Config:
                                support_id=env('SUPPORT_ID'),
                                redis_url=env('REDIS_URL'),
                                yookassa_id=env('YOOKASSA_ID'),
-                               yookassa_key=env('YOOKASSA_KEY')))
+                               yookassa_key=env('YOOKASSA_KEY'),
+                               username_avibus=env('USERNAME_AVIBUS'),
+                               password_avibus=env('PASSWORD_AVIBUS')))

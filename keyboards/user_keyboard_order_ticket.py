@@ -62,17 +62,39 @@ def keyboard_email(email: str) -> InlineKeyboardMarkup:
     return keyboard
 
 
-def keyboard_add_luggage() -> InlineKeyboardMarkup:
+def keyboard_add_luggage(list_fares: list) -> InlineKeyboardMarkup:
+    luggage = False
+    for fare in list_fares:
+        if fare['Cost'] > 0 and fare['Name'] == 'Багажный':
+            luggage = True
     button_1 = InlineKeyboardButton(text='Добавить багаж 🧳', callback_data='add_luggage')
     button_2 = InlineKeyboardButton(text='Купить билет 🎫', callback_data='pay_ticket')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
+    if luggage:
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
+        return keyboard
+    else:
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_2]])
+        return keyboard
+
+
+def keyboard_add_fares(list_fares: list) -> InlineKeyboardMarkup:
+    button_list = []
+    for fare in list_fares:
+        if fare['Cost'] > 0:
+            text = fare['Name']
+            callback_data = fare['SeatType']
+            button_list.append(InlineKeyboardButton(text=text,
+                                                    callback_data=f'add_{callback_data}'))
+    button_2 = InlineKeyboardButton(text='Купить билет 🎫', callback_data='pay_ticket')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[button_list, [button_2]])
     return keyboard
 
 
 def keyboard_pay_ticket() -> InlineKeyboardMarkup:
     button_1 = InlineKeyboardButton(text='Купить билет 🎫', callback_data='pay_ticket')
     button_2 = InlineKeyboardButton(text='Добавить багаж 🧳', callback_data='add_luggage')
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]])
+    button_3 = InlineKeyboardButton(text='Удалить багаж ❌', callback_data='del_luggage')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2, button_3]])
     return keyboard
 
 

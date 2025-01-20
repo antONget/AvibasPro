@@ -4,7 +4,11 @@ import logging
 
 async def get_boarding_receipt(dict_check_ticket: dict, user_id: int) -> None:
     logging.info('get_boarding_receipt()')
-    workbook = load_workbook(filename="services/roter_check.xlsx")
+    frame = dict_check_ticket["B11:B12"]
+    file = 'passanger'
+    if 'Багажный' in frame:
+        file = 'luggage'
+    workbook = load_workbook(filename=f"services/{file}.xlsx")
     sheet = workbook.active
     for key, value in dict_check_ticket.items():
         if key == 'H2':

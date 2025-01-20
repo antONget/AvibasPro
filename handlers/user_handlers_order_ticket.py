@@ -9,9 +9,11 @@ from aiogram.filters import StateFilter
 
 from keyboards.user_keyboard_order_ticket import keyboard_name, keyboard_pay_ticket, keyboard_gender, \
     keyboard_citizenship, keyboard_birthday, keyboard_passport, keyboard_citizenship_, keyboards_get_contact, \
-    keyboard_email, keyboard_payment, keyboard_confirm_ticket_data
+    keyboard_email, keyboard_payment, keyboard_confirm_ticket_data, keyboard_add_luggage
+from keyboards.user_keyboard_select_seat import keyboards_seat
 from keyboards.user_keyboard_select_station import keyboard_main_button, keyboard_major_button
-from services.zeep_soap import add_tickets, set_ticket_data, reserve_order, payment_ticket
+from services.zeep_soap import add_tickets, set_ticket_data, reserve_order, payment_ticket, get_occupied_seats, \
+    get_trips_segment
 from services.payments import create_payment, check_payment
 from services.smtp_email import send_email
 from services.exel_to_pdf import excel_to_pdf
@@ -116,7 +118,7 @@ async def ticket_data_confirm(callback: CallbackQuery, state: FSMContext, bot: B
                                         gender=gender,
                                         citizenship=citizenship)
     await callback.message.edit_text(text='Данные успешно добавлены',
-                                     reply_markup=keyboard_pay_ticket())
+                                     reply_markup=keyboard_add_luggage(data['fares']))
 
 
 @router.callback_query(F.data == 'ticket_data_change')
@@ -435,7 +437,7 @@ async def get_ticket_data(state: FSMContext, message: Message):
                                         gender=gender,
                                         citizenship=citizenship)
     await message.answer(text='Данные успешно добавлены',
-                         reply_markup=keyboard_pay_ticket())
+                         reply_markup=keyboard_add_luggage(data['fares']))
 
 
 @router.callback_query(F.data == 'pay_ticket')
@@ -443,7 +445,31 @@ async def pay_ticket(callback: CallbackQuery, state: FSMContext) -> None:
     logging.info(f'pay_ticket')
     data = await state.get_data()
     order_id = data['order_id']
-    reserve = await reserve_order(order_id=order_id)
+    try:
+        reserve = await reserve_order(order_id=order_id)
+    except:
+        await callback.message.answer(text='К сожалению ваше место уже купили, выберите другое место')
+        data = await state.get_data()
+        trip_id = data['trip_id']
+        occupied_seats = await get_occupied_seats(trip_id=trip_id,
+                                                  departure=data['departure'],
+                                                  destination=data['destination'],
+                                                  order_id=trip_id)
+        trips_segment = await get_trips_segment(trip_id=trip_id,
+                                                departure=data['departure'],
+                                                destination=data['destination'])
+        await state.update_data(departure_time=trips_segment['DepartureTime'])
+        dict_bus = occupied_seats['Bus']
+        dict_seats_scheme = dict_bus['SeatsScheme']
+        if occupied_seats['return']:
+            dict_reserved = occupied_seats['return']['Elements']
+        else:
+            dict_reserved = {}
+        await callback.message.edit_text(text=f'Выберите свободное <b>МЕСТО</b>',
+                                         reply_markup=keyboards_seat(seats_scheme=dict_seats_scheme,
+                                                                     seats_reserved=dict_reserved))
+        await callback.answer()
+        return
     amount = reserve['Amount']
     await state.update_data(amount=amount)
     user: User = await get_user(tg_id=callback.from_user.id)
@@ -498,72 +524,73 @@ async def get_ticket(callback: CallbackQuery, state: FSMContext, bot: Bot) -> No
         order_id = data['order_id']
         amount = data['amount']
         payment = await payment_ticket(order_id=order_id, amount=amount)
-        ticket_data = payment["Tickets"][0]["Date"]
-        data_ticket = str(ticket_data.strftime("%d.%m.%Y %H:%M"))
-        ticket_departure_time = payment["Tickets"][0]["DepartureTime"]
-        departure_time = str(ticket_departure_time.strftime("%H:%M"))
-        departure_data = str(ticket_departure_time.strftime("%d.%m.%Y"))
-        ticket_arrival_time = payment["Tickets"][0]["ArrivalTime"]
-        arrival_time = str(ticket_arrival_time.strftime("%H:%M"))
-        arrival_data = str(ticket_arrival_time.strftime("%d.%m.%Y"))
-        dict_check_ticket = {"B5:B6": f'{str(payment["Trip"]["RouteName"])}',
-                             "B11:B12": f'{str(payment["Tickets"][0]["Number"])},'
-                                        f' тариф {str(payment["Tickets"][0]["FareName"])},'
-                                        f' заказ {str(payment["Number"])}, оплачен {data_ticket}',
-                             "B14:B15": f'{str(payment["Tickets"][0]["PassengerName"])},'
-                                        f' {str(payment["Tickets"][0]["PassengerDoc"])}',
-                             "B17:B18": f'{float(payment["Amount"])} руб.',
-                             "E1:H1": f'*{str(payment["Tickets"][0]["Number"])}*',
-                             "D2:G2": str(payment["Tickets"][0]["FareName"]),
-                             "H2": f'Место {str(payment["Tickets"][0]["SeatNum"])}',
-                             "F5:F6": departure_time,
-                             "G5:H6": departure_data,
-                             "F7:H9": str(payment["Tickets"][0]["Departure"]["Name"]),
-                             "F10:H13": f'{str(payment["Trip"]["Bus"]["Model"])},'
-                                        f' {str(payment["Trip"]["Bus"]["LicencePlate"])}\n'
-                                        f'{str(payment["Trip"]["Departure"]["Address"])}\n'
-                                        f'{str(payment["Trip"]["Departure"]["Phone"]) if payment["Trip"]["Departure"]["Phone"] else ""}',
-                             "F17:F18": arrival_time,
-                             "G17:H17": arrival_data,
-                             "F19:H21": str(payment["Tickets"][0]["Destination"]["Name"]),
-                             "F22:H24": f'{str(payment["Trip"]["Destination"]["Address"])}\n'
-                                        f'{str(payment["Trip"]["Destination"]["Phone"]) if payment["Trip"]["Destination"]["Phone"] else""}'}
-        # print(dict_check_ticket)
-        # with open(file='check_ticket.json',
-        #           mode='w',
-        #           encoding='utf-8') as file:
-        #     json.dump(dict_check_ticket, file)
-        ticket_data = {"amount": float(payment['Amount']),
-                       "data_ticket": data_ticket,
-                       "id_departure": payment["Trip"]["Departure"]["Id"],
-                       "departure": payment["Trip"]["Departure"]["Name"],
-                       "id_destination": payment["Trip"]["Destination"]["Id"],
-                       "destination": payment["Trip"]["Destination"]["Name"],
-                       "departure_time": payment["DepartureTime"],
-                       "departure_data": departure_data,
-                       "arrival_time": arrival_time,
-                       "arrival_data": arrival_data,
-                       "payment_id": payment_id,
-                       "status_payment": StatusTicket.payment}
-        await update_ticket(id_order=payment["Number"],
-                            data_ticket=data_ticket,
-                            status_payment=StatusTicket.payment)
-        await get_boarding_receipt(dict_check_ticket=dict_check_ticket, user_id=callback.from_user.id)
-        excel_to_pdf(input_file=f'TICKET/{callback.from_user.id}.xlsx',
-                     output_file=f'TICKET/{callback.from_user.id}.pdf')
-        # await callback.answer(text='Платеж прошел успешно', show_alert=True)
-        user: User = await get_user(tg_id=callback.from_user.id)
-        await send_email(to_email=user.email,
-                         message_email=f'Билет: *{order_id}*\n'
-                                       f'Отправление: {payment["Trip"]["Departure"]["Name"]}\n'
-                                       f'{departure_data} {departure_time}\n'
-                                       f'Прибытие: {payment["Trip"]["Destination"]["Name"]}\n'
-                                       f'{arrival_data} {arrival_time}\n'
-                                       f'Место: {payment["Tickets"][0]["SeatNum"]}',
-                         tg_user=callback.from_user.id)
-        await callback.message.answer_document(document=FSInputFile(path=f'TICKET/{callback.from_user.id}.pdf'),
-                                               caption=f'Ваш билет *{order_id}*\n'
-                                                       f'Он также направлен вам на email')
+        for i in range(len(payment["Tickets"])):
+            ticket_data = payment["Tickets"][i]["Date"]
+            data_ticket = str(ticket_data.strftime("%d.%m.%Y %H:%M"))
+            ticket_departure_time = payment["Tickets"][i]["DepartureTime"]
+            departure_time = str(ticket_departure_time.strftime("%H:%M"))
+            departure_data = str(ticket_departure_time.strftime("%d.%m.%Y"))
+            ticket_arrival_time = payment["Tickets"][i]["ArrivalTime"]
+            arrival_time = str(ticket_arrival_time.strftime("%H:%M"))
+            arrival_data = str(ticket_arrival_time.strftime("%d.%m.%Y"))
+            dict_check_ticket = {"B5:B6": f'{str(payment["Trip"]["RouteName"])}',
+                                 "B11:B12": f'{str(payment["Tickets"][i]["Number"])},'
+                                            f' тариф {str(payment["Tickets"][i]["FareName"])},'
+                                            f' заказ {str(payment["Number"])}, оплачен {data_ticket}',
+                                 "B14:B15": f'{str(payment["Tickets"][0]["PassengerName"])},'
+                                            f' {str(payment["Tickets"][0]["PassengerDoc"])}',
+                                 "B17:B18": f'{float(payment["Tickets"][i]["Calculation"]["FareAmount"])} руб.',
+                                 "E1:H1": f'*{str(payment["Tickets"][i]["Number"])}*',
+                                 "D2:G2": str(payment["Tickets"][i]["FareName"]),
+                                 "H2": f'Место {str(payment["Tickets"][i]["SeatNum"])}',
+                                 "F5:F6": departure_time,
+                                 "G5:H6": departure_data,
+                                 "F7:H9": str(payment["Tickets"][i]["Departure"]["Name"]),
+                                 "F10:H13": f'{str(payment["Trip"]["Bus"]["Model"])},'
+                                            f' {str(payment["Trip"]["Bus"]["LicencePlate"])}\n'
+                                            f'{str(payment["Trip"]["Departure"]["Address"])}\n'
+                                            f'{str(payment["Trip"]["Departure"]["Phone"]) if payment["Trip"]["Departure"]["Phone"] else ""}',
+                                 "F17:F18": arrival_time,
+                                 "G17:H17": arrival_data,
+                                 "F19:H21": str(payment["Tickets"][i]["Destination"]["Name"]),
+                                 "F22:H24": f'{str(payment["Trip"]["Destination"]["Address"])}\n'
+                                            f'{str(payment["Trip"]["Destination"]["Phone"]) if payment["Trip"]["Destination"]["Phone"] else""}'}
+            # print(dict_check_ticket)
+            # with open(file='check_ticket.json',
+            #           mode='w',
+            #           encoding='utf-8') as file:
+            #     json.dump(dict_check_ticket, file)
+            ticket_data = {"amount": float(payment['Amount']),
+                           "data_ticket": data_ticket,
+                           "id_departure": payment["Trip"]["Departure"]["Id"],
+                           "departure": payment["Trip"]["Departure"]["Name"],
+                           "id_destination": payment["Trip"]["Destination"]["Id"],
+                           "destination": payment["Trip"]["Destination"]["Name"],
+                           "departure_time": payment["DepartureTime"],
+                           "departure_data": departure_data,
+                           "arrival_time": arrival_time,
+                           "arrival_data": arrival_data,
+                           "payment_id": payment_id,
+                           "status_payment": StatusTicket.payment}
+            await update_ticket(id_order=payment["Number"],
+                                data_ticket=data_ticket,
+                                status_payment=StatusTicket.payment)
+            await get_boarding_receipt(dict_check_ticket=dict_check_ticket, user_id=callback.from_user.id)
+            excel_to_pdf(input_file=f'TICKET/{callback.from_user.id}.xlsx',
+                         output_file=f'TICKET/{callback.from_user.id}.pdf')
+            # await callback.answer(text='Платеж прошел успешно', show_alert=True)
+            user: User = await get_user(tg_id=callback.from_user.id)
+            await send_email(to_email=user.email,
+                             message_email=f'Билет: *{str(payment["Tickets"][i]["Number"])}*\n'
+                                           f'Отправление: {payment["Trip"]["Departure"]["Name"]}\n'
+                                           f'{departure_data} {departure_time}\n'
+                                           f'Прибытие: {payment["Trip"]["Destination"]["Name"]}\n'
+                                           f'{arrival_data} {arrival_time}\n'
+                                           f'Место: {payment["Tickets"][0]["SeatNum"]}',
+                             tg_user=callback.from_user.id)
+            await callback.message.answer_document(document=FSInputFile(path=f'TICKET/{callback.from_user.id}.pdf'),
+                                                   caption=f'Ваш билет *{order_id}*\n'
+                                                           f'Он также направлен вам на email')
     else:
         await callback.message.answer(text='Платеж не подтвержден, если вы совершили платеж, то попробуйте запросить'
                                            ' билет немного позднее')

@@ -44,9 +44,13 @@ async def select_num_router(callback: CallbackQuery, state: FSMContext, bot: Bot
         dict_reserved = occupied_seats['return']['Elements']
     else:
         dict_reserved = {}
-    await callback.message.edit_text(text=f'Выберите свободное <b>МЕСТО</b>',
-                                     reply_markup=keyboards_seat(seats_scheme=dict_seats_scheme,
-                                                                 seats_reserved=dict_reserved))
+
+    try:
+        await callback.message.edit_text(text=f'Выберите свободное <b>МЕСТО</b>',
+                                         reply_markup=keyboards_seat(seats_scheme=dict_seats_scheme,
+                                                                     seats_reserved=dict_reserved))
+    except:
+        pass
     await callback.answer()
 
 
@@ -115,7 +119,7 @@ async def select_seat_num(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                                 destination=data['destination'],
                                                 order_id='')
         await state.update_data(order_id=sale_session['Number'])
-
+        await state.update_data(fares=sale_session['Trip']['Fares'])
         await callback.message.edit_text(text=f'Проверьте данные о маршруте:\n\n'
                                               f'<i>Отправление:</i> {sale_session["Departure"]["Name"]}\n'
                                               f'<i>Прибытие:</i> {sale_session["Destination"]["Name"]}\n'

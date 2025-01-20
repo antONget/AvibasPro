@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from services.zeep_soap import add_tickets
+from services.zeep_soap import add_tickets, del_tickets
 from config_data.config import Config, load_config
 from keyboards.user_keyboard_order_ticket import keyboard_pay_ticket, keyboard_add_luggage
 import logging
@@ -43,6 +43,44 @@ async def add_luggage(callback: CallbackQuery, state: FSMContext) -> None:
                                           f'<i>Время:</i> {departure_time.strftime("%H:%M")}\n'
                                           f'<i>Место:</i> {seat_num}\n'
                                           f'<i>Багаж:</i> {count_luggage}\n',
-                                     reply_markup=keyboard_add_luggage())
+                                     reply_markup=keyboard_pay_ticket())
     await callback.answer()
 
+
+@router.callback_query(F.data == 'del_luggage')
+async def add_luggage(callback: CallbackQuery, state: FSMContext) -> None:
+    """
+    Оформление билета
+    :param callback:
+    :param state:
+    :return:
+    """
+    logging.info(f'add_luggage')
+    data = await state.get_data()
+    order_id = data['order_id']
+    seat_num = data['seat_num']
+    data_trip = data['data_trip']
+    departure_time = data['departure_time']
+    logging.info(f'add_luggage {order_id} {seat_num} {data_trip} {departure_time}')
+    result = await del_tickets(order_id=order_id,
+                               fare_name='Багажный',
+                               seat_num=0,
+                               parent_ticket_seat_num=seat_num)
+    count_luggage = 0
+    for fare in result['Tickets']:
+        if fare['FareName'] == 'Багажный':
+            count_luggage += 1
+    # await state.update_data(number=result['TicketSeats']['Elements'][0]['TicketNumber'])
+    if count_luggage > 0:
+        keyboard = keyboard_pay_ticket()
+    else:
+        keyboard = keyboard_add_luggage(data['fares'])
+    await callback.message.edit_text(text=f'Проверьте данные о маршруте:\n\n'
+                                          f'<i>Отправление:</i> {result["Trip"]["Departure"]["Name"]}\n'
+                                          f'<i>Прибытие:</i> {result["Trip"]["Destination"]["Name"]}\n'
+                                          f'<i>Дата:</i> {data_trip}\n'
+                                          f'<i>Время:</i> {departure_time.strftime("%H:%M")}\n'
+                                          f'<i>Место:</i> {seat_num}\n'
+                                          f'<i>Багаж:</i> {count_luggage}\n',
+                                     reply_markup=keyboard)
+    await callback.answer()

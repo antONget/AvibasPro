@@ -4,15 +4,16 @@ from zeep import Client, xsd
 from zeep.transports import Transport
 from requests.auth import HTTPBasicAuth
 import requests
-import asyncio
-import json
+from config_data.config import Config, load_config
+
+config: Config = load_config()
 
 # Определяем учётные данные
 username_test = 'wsuser'
 password_test = 'sales'
-# username = 'Hindikainen'
-username = 'Konorev'
-password = 'By0xo3bu'
+
+username = config.tg_bot.username_avibus
+password = config.tg_bot.password_avibus
 unicode_string = username
 encoded_string = unicode_string.encode("utf-8")
 # Указываем URL WSDL SOAP-службы
@@ -88,9 +89,9 @@ async def get_destinations(departure: str) -> list[dict]:
     logging.info('get_destinations')
     destinations = client.service.GetDestinations(Substring='',
                                                   Departure=departure)
-    text_file = open('ANSWER/DESTINATIONS.txt', 'w')
-    text_file.write(str(destinations))
-    text_file.close()
+    # text_file = open('ANSWER/DESTINATIONS.txt', 'w')
+    # text_file.write(str(destinations))
+    # text_file.close()
     return destinations
 
 
@@ -1567,9 +1568,9 @@ async def get_trips_segment(trip_id: str, departure: str, destination: str):
     trips_segment = client.service.GetTripSegment(TripId=trip_id,
                                                   Departure=departure,
                                                   Destination=destination)
-    text_file = open('ANSWER/TRIPS_SEGMENT.txt', 'w')
-    text_file.write(str(trips_segment))
-    text_file.close()
+    # text_file = open('ANSWER/TRIPS_SEGMENT.txt', 'w')
+    # text_file.write(str(trips_segment))
+    # text_file.close()
     return trips_segment
 
 
@@ -2031,31 +2032,19 @@ async def get_occupied_seats(trip_id: str, departure: str, destination: str, ord
                                                      Departure=departure,
                                                      Destination=destination,
                                                      OrderId=order_id)
-    text_file = open('ANSWER/OCCUPIED_SEATS.txt', 'w')
-    text_file.write(str(occupied_seats))
-    text_file.close()
+    # text_file = open('ANSWER/OCCUPIED_SEATS.txt', 'w')
+    # text_file.write(str(occupied_seats))
+    # text_file.close()
     return occupied_seats
 
 
 async def start_sale_session(trip_id: str, departure: str, destination: str, order_id: str):
-    # xml = f'''
-    # <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sal="http://www.unistation.ru/saleport" xmlns:xdto="http://www.unistation.ru/xdto">
-    # <soapenv:Header/>
-    #    <soapenv:Body>
-    #     <sal:TripId>{trip_id}</sal:TripId>
-    #     <sal:Departure>{departure}</sal:Departure>
-    #     <sal:Destination>{destination}</sal:Destination>
-    #     <sal:OrderId>{order_id}</sal:OrderId>
-    #    </soapenv:Body>
-    # </soapenv:Envelope>
-    # '''
-    # sale_session = client.service.StartSaleSession(xml)
     logging.info('start_sale_session')
     sale_session = client.service.StartSaleSession(TripId=trip_id,
                                                    Departure=departure,
                                                    Destination=destination,
                                                    OrderId=order_id)
-    # text_file = open('ANSWER/SALE_SESSION.txt', 'w')
+    # text_file = open(f'ANSWER/SALE_SESSION_{departure}-{destination}.txt', 'w')
     # text_file.write(str(sale_session))
     # text_file.close()
     return sale_session
@@ -2069,11 +2058,24 @@ async def add_tickets(order_id: str, fare_name: str, seat_num: int, parent_ticke
                                                                              "SeatNum": seat_num,
                                                                              "ParentTicketSeatNum":
                                                                                  parent_ticket_seat_num}))
-    # text_file = open('ANSWER/ADD_TICKET.txt', 'w')
+    # text_file = open(f'ANSWER/ADD_TICKET_{order_id}.txt', 'w')
     # text_file.write(str(add_ticket))
     # text_file.close()
     return add_ticket
 
+
+async def del_tickets(order_id: str, fare_name: str, seat_num: int, parent_ticket_seat_num: int):
+    logging.info('add_tickets')
+    TicketSeats = client.get_type('ns0:TicketSeats')
+    del_ticket = client.service.DelTickets(OrderId=order_id,
+                                           TicketSeats=TicketSeats(Elements={"FareName": fare_name,
+                                                                             "SeatNum": seat_num,
+                                                                             "ParentTicketSeatNum":
+                                                                                 parent_ticket_seat_num}))
+    # text_file = open(f'ANSWER/DEL_TICKET_{order_id}.txt', 'w')
+    # text_file.write(str(del_ticket))
+    # text_file.close()
+    return del_ticket
 
 async def set_ticket_data(order_id: str, number: str, seat_num: int, fare_name: str, name: str, document_number: str,
                           document: str, birthday: str, gender: str, citizenship: str):
@@ -2128,9 +2130,9 @@ async def payment_ticket(order_id: str, amount: str):
                                                                          "Amount": amount}),
                                      ChequeSettings=ChequeSettings(ChequeWidth=48))
 
-    text_file = open('ANSWER/PAYMENT.txt', 'w')
-    text_file.write(str(payment))
-    text_file.close()
+    # text_file = open('ANSWER/PAYMENT.txt', 'w')
+    # text_file.write(str(payment))
+    # text_file.close()
     return payment
 
 
@@ -2141,9 +2143,9 @@ async def add_ticket_return(ticket_number: str, departure_id: str, order_id: str
                                                        Departure=departure_id,
                                                        ReturnOrderId='')
 
-    text_file = open('ANSWER/ADD_TICKET_RETURN.txt', 'w')
-    text_file.write(str(add_ticket_return))
-    text_file.close()
+    # text_file = open('ANSWER/ADD_TICKET_RETURN.txt', 'w')
+    # text_file.write(str(add_ticket_return))
+    # text_file.close()
     return add_ticket_return
 
 
@@ -2158,9 +2160,9 @@ async def return_payment(return_order_id: str, terminal_id: int, terminal_sessio
                                                                                       "Amount": amount}),
                                                   ChequeSettings=ChequeSettings(ChequeWidth=48))
 
-    text_file = open('ANSWER/RETURN_PAYMENT.txt', 'w')
-    text_file.write(str(return_payment))
-    text_file.close()
+    # text_file = open('ANSWER/RETURN_PAYMENT.txt', 'w')
+    # text_file.write(str(return_payment))
+    # text_file.close()
     return return_payment
 
 
